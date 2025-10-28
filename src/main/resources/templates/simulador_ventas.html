@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" th:href="@{/css/index.css}">
+<link rel="stylesheet" th:href="@{/css/shop.css}">
+    <link rel="icon" th:href="@{/img/portadafondo.png}">
+    <title>Simulador de Ventas - Veterinaria Patitas</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- jsPDF CDN para generar la boleta -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<header>
+         <div th:replace="fragments/navbar :: navbar"></div>
+    </header>
+    <div id="app" class="container-fluid">
+      
+        <div class="main-content-box mx-auto p-4 p-md-5 my-5" style="max-width: 1200px;">
+            <header class="text-center mb-5 py-5">
+            <h1 class="display-5 fw-bolder text-dark text-uppercase">Adquiere tu producto</h1>
+        </header>
+        
+        <!-- Mensaje de Notificación (Manejado por Spring Controller) -->
+        <div th:if="${message}" id="notification" 
+             th:classappend="${#strings.contains(message, 'Error') ? 'alert-danger' : 'alert-success'}"
+             class="alert mx-auto mb-4" role="alert" style="max-width: 1140px;">
+            <p th:text="${message}" class="mb-0 fw-bold"></p>
+        </div>
+
+        <div class="row mx-auto" style="max-width: 1140px;">
+            
+            <!-- Columna de Productos (Catálogo) - Ocupa 8/12 en escritorio -->
+            <section class="col-lg-8 mb-4">
+                <h2 class="h4 fw-bold mb-4 text-secondary"><i class="fa-solid fa-list-ul me-2 text-patitas"></i>Catálogo de Productos</h2>
+                
+                <div id="product-list" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                    
+                    <!-- Iteración de productos con Thymeleaf -->
+                    <div th:each="product : ${products}" class="col">
+                        <div th:id="|product-card-${product.id}|"
+                             th:class="|card h-100 card-product shadow-sm border-start border-5 ${product.stock > 0 ? 'border-patitas' : 'border-secondary'}|">
+                            
+                            <div class="card-body">
+                                <h3 class="card-title h5 fw-bold" th:text="${product.name}"></h3>
+                                <p class="card-text display-6 fw-bolder text-patitas mb-3" th:text="|S/. ${#numbers.formatDecimal(product.price, 1, 2)}|"></p>
+                                <p class="card-text text-muted mb-3" th:text="|Unidad: ${product.unit}|"></p>
+                                
+                                <!-- Formulario para agregar al carrito (POST al Controlador Java) -->
+                                <form th:action="@{/add_to_cart}" method="post">
+                                    <input type="hidden" name="productId" th:value="${product.id}" />
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <!-- Etiqueta de Stock con estilo dinámico -->
+                                        <span th:id="|stock-${product.id}|"
+                                            th:class="|badge p-2 ${product.stock > 0 ? 'text-bg-success' : 'text-bg-danger stock-agotado'}|"
+                                            th:text="|Stock: ${product.stock}|">
+                                        </span>
+                                        
+                                        <!-- Input de Cantidad -->
+                                        <input type="number" name="quantity" value="1" min="1" 
+                                            th:max="${product.stock}" th:disabled="${product.stock <= 0}"
+                                            class="form-control w-auto text-center" style="max-width: 80px;">
+                                    </div>
+
+                                    <button type="submit" th:disabled="${product.stock <= 0}"
+                                        class="w-100 btn btn-patitas btn-sm shadow-sm">
+                                        <i class="fa-solid fa-plus me-1"></i> Añadir al Carrito
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Fin de Iteración -->
+                </div>
+            </section>
+
+            <!-- Columna del Carrito y Checkout - Ocupa 4/12 en escritorio -->
+            <aside class="col-lg-4">
+                <div class="card shadow-lg border-top border-5 border-patitas">
+                    <div class="card-body p-4">
+                        <h2 class="card-title h4 fw-bold mb-4 text-secondary"><i class="fa-solid fa-cart-shopping me-2 text-warning"></i>Carrito de Compras</h2>
+                        
+                        <div id="cart-items" class="border-bottom pb-3 mb-3">
+                            
+                            <!-- Mensaje de carrito vacío -->
+                            <p th:if="${#lists.isEmpty(cart)}" id="empty-cart-message" class="text-secondary fst-italic text-center py-4">El carrito está vacío.</p>
+                            
+                            <!-- Iteración de ítems del carrito con Thymeleaf -->
+                            <ul class="list-group list-group-flush" th:unless="${#lists.isEmpty(cart)}">
+                                <li th:each="item : ${cart}" class="list-group-item d-flex justify-content-between align-items-center bg-light rounded mb-2 border-0">
+                                    <div th:with="lineTotal=${item.price * item.quantity}">
+                                        <p class="fw-semibold text-dark mb-0" th:text="${item.name}"></p>
+                                        <p class="text-sm text-muted mb-0" th:text="|${item.quantity} x S/. ${#numbers.formatDecimal(item.price, 1, 2)}|"></p>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2" th:with="lineTotal=${item.price * item.quantity}">
+                                        <span class="fw-bold text-patitas me-2" th:text="|S/. ${#numbers.formatDecimal(lineTotal, 1, 2)}|"></span>
+                                        
+                                        <!-- Formulario para eliminar ítem -->
+                                        <form th:action="@{/remove_from_cart}" method="post" style="display:inline;">
+                                            <input type="hidden" name="productId" th:value="${item.id}" />
+                                            <button type="submit" class="btn btn-sm text-danger p-0 border-0" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            </ul>
+                            <!-- Fin de Iteración -->
+                        </div>
+
+                        <!-- Totales (Datos pasados por el Controlador) -->
+                        <div id="cart-totals">
+                            <div class="d-flex justify-content-between py-1 text-secondary">
+                                <span>Subtotal:</span>
+                                <span id="subtotal" class="fw-bold" th:text="|S/. ${#numbers.formatDecimal(subtotal, 1, 2)}|">S/. 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 text-secondary">
+                                <span>IGV (18%):</span>
+                                <span id="tax" class="fw-bold" th:text="|S/. ${#numbers.formatDecimal(tax, 1, 2)}|">S/. 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 border-top mt-2 fs-5 fw-bolder text-dark">
+                                <span>Total a Pagar:</span>
+                                <span id="total" th:text="|S/. ${#numbers.formatDecimal(total, 1, 2)}|">S/. 0.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de Acción (POST al Controlador Java) -->
+                        <form th:action="@{/finalize_sale}" method="post" class="mt-4">
+                            <button type="submit" id="checkout-button" th:disabled="${#lists.isEmpty(cart)}"
+                                class="w-100 btn btn-patitas fw-bold py-3 shadow-sm d-flex align-items-center justify-content-center"
+                                th:classappend="${#lists.isEmpty(cart) ? 'disabled' : ''}">
+                                <i class="fa-solid fa-file-invoice me-2"></i>
+                                Confirmar Venta 
+                            </button>
+                        </form>
+                        
+                        <form th:action="@{/clear_cart}" method="post" class="mt-2">
+                            <button type="submit" id="clear-cart-button"
+                                class="w-100 btn btn-danger fw-bold py-2 d-flex align-items-center justify-content-center">
+                                <i class="fa-solid fa-trash-can me-2"></i>
+                                Vaciar Carrito
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+   
+
+    <!-- Script de la Aplicación (Solo función PDF) -->
+    <script>
+        // Tasa de Impuesto
+        const IGV_RATE = 0.18;
+
+        /**
+         * Genera y descarga la boleta de venta en formato PDF.
+         * Esta función se llama automáticamente después de que el controlador Java confirma la venta.
+         */
+        function generateInvoicePDF(finalCart, totals) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 15; 
+
+            // Datos de la empresa
+            doc.setFontSize(18);
+            doc.setTextColor(53, 66, 74); 
+            doc.text("Clínica Veterinaria PATITAS", pageWidth / 2, y, { align: "center" });
+            y += 7;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("RUC: 20512345678 | Villa El Salvador, Lima", pageWidth / 2, y, { align: "center" });
+            y += 10;
+            
+            // Título y número de boleta
+            doc.setFontSize(14);
+            doc.setTextColor(0, 191, 174); 
+            doc.text("BOLETA DE VENTA N° 0001-", 15, y);
+            doc.setTextColor(0, 0, 0);
+            // Número de boleta aleatorio simulado
+            doc.text(String(Math.floor(Math.random() * 9000) + 1000), 75, y); 
+            y += 5;
+
+            // Fecha y Hora
+            const now = new Date();
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${now.toLocaleDateString('es-ES')}`, 15, y);
+            doc.text(`Hora: ${now.toLocaleTimeString('es-ES')}`, pageWidth - 15, y, { align: "right" });
+            y += 8;
+
+            // Encabezado de la tabla
+            doc.setFillColor(230, 230, 230);
+            doc.rect(15, y, pageWidth - 30, 7, 'F');
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text("Cant.", 17, y + 5);
+            doc.text("Descripción", 40, y + 5);
+            doc.text("P. Unit.", 135, y + 5);
+            doc.text("Total", pageWidth - 17, y + 5, { align: "right" });
+            doc.setFont(undefined, 'normal');
+            y += 7;
+
+            // Items de la boleta
+            finalCart.forEach(item => {
+                const lineTotal = item.price * item.quantity;
+
+                // Salto de página simple
+                if (y > 270) { 
+                    doc.addPage();
+                    y = 15;
+                }
+
+                doc.setFontSize(10);
+                doc.text(String(item.quantity), 17, y + 5);
+                doc.text(item.name, 40, y + 5);
+                doc.text(item.price.toFixed(2), 135, y + 5);
+                doc.text(lineTotal.toFixed(2), pageWidth - 17, y + 5, { align: "right" });
+                y += 7;
+            });
+            y += 5; 
+
+            // Separador
+            doc.line(15, y, pageWidth - 15, y);
+            y += 3;
+
+            // Totales
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text("Subtotal:", pageWidth - 50, y);
+            doc.text(`S/. ${totals.subtotal.toFixed(2)}`, pageWidth - 17, y, { align: "right" });
+            y += 5;
+
+            doc.text(`IGV (${(IGV_RATE * 100).toFixed(0)}%):`, pageWidth - 50, y);
+            doc.text(`S/. ${totals.tax.toFixed(2)}`, pageWidth - 17, y, { align: "right" });
+            y += 7;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text("TOTAL:", pageWidth - 50, y);
+            doc.text(`S/. ${totals.total.toFixed(2)}`, pageWidth - 17, y, { align: "right" });
+            y += 10;
+            
+            // Mensaje final
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text("¡Gracias por su compra!", pageWidth / 2, y + 5, { align: "center" });
+
+            // Guardar el PDF
+            doc.save(`Boleta_PatitasVet_${now.getTime()}.pdf`);
+        }
+
+        // Función de inicialización para detectar la venta exitosa
+        window.onload = function() {
+            // Se busca el elemento oculto que contiene el JSON del carrito final.
+            const finalCartDataElement = document.getElementById('final-cart-data');
+            
+            // Solo procede si el controlador Java ha pasado el atributo 'finalCart'
+            if (finalCartDataElement && finalCartDataElement.textContent) {
+                const finalCartJson = finalCartDataElement.textContent;
+                
+                // Extraer los totales del DOM, ya calculados por Java
+                const subtotalText = document.getElementById('subtotal')?.textContent;
+                const taxText = document.getElementById('tax')?.textContent;
+                const totalText = document.getElementById('total')?.textContent;
+
+                // Función auxiliar para parsear S/. 123.45 a número
+                const parseCurrency = (text) => parseFloat(text?.replace('S/. ', '').replace(',', '')) || 0;
+
+                const totals = {
+                    subtotal: parseCurrency(subtotalText),
+                    tax: parseCurrency(taxText),
+                    total: parseCurrency(totalText)
+                };
+
+                try {
+                    // El JSON es escapado por Thymeleaf, así que lo parseamos
+                    const finalCart = JSON.parse(finalCartJson);
+                    
+                    // Generar el PDF
+                    if (finalCart.length > 0) {
+                        generateInvoicePDF(finalCart, totals);
+                    }
+                } catch (e) {
+                    console.error("Error al procesar los datos de finalCart para el PDF:", e);
+                }
+            }
+        };
+    </script>
+    
+    <!-- Contenedor oculto para pasar el objeto finalCart del Java Controller al JS del PDF -->
+    <!-- ESTO ES CRUCIAL: El controlador Java lo llena solo al finalizar la venta. -->
+    <div id="final-cart-data" style="display:none;" th:if="${finalCart != null}" 
+         th:text="${#json.toJson(finalCart)}"></div>
+    <footer>
+    <p>&copy; 2025 Veterinaria PATITAS. Todos los derechos reservados.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
+
