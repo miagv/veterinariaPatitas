@@ -22,6 +22,14 @@ public class Appointment {
     @Column(nullable = false, length = 100)
     private String clientName;
 
+    @ManyToOne
+    @JoinColumn(name = "medico_id")
+    private Medico medico;
+
+    public Medico getMedico() { return medico; }
+    public void setMedico(Medico medico) { this.medico = medico; }
+
+
 
     public Appointment() {}
 

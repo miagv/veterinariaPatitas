@@ -6,6 +6,8 @@
 package com.example.veterinariaPatitas.model;
 
 import jakarta.persistence.*; 
+import java.util.List;
+
 
 @Entity                     
 @Table(name = "servicios")  
@@ -27,7 +29,9 @@ public class ServiceVet {
     @Column(length = 50)
     private String duration; 
 
-    
+    @OneToMany(mappedBy = "servicio")
+    private List<Medico> medicos;
+
     public ServiceVet() {
     }
 
@@ -38,6 +42,7 @@ public class ServiceVet {
         this.description = description;
         this.price = price;
         this.duration = duration;
+        
     }
 
     
@@ -80,6 +85,14 @@ public class ServiceVet {
     public void setDuration(String duration) {
         this.duration = duration;
     }
+    public List<Medico> getMedicos() {
+    return medicos;
+    }
+
+    public void setMedicos(List<Medico> medicos) {
+    this.medicos = medicos;
+     }
+
 
     @Override
     public String toString() {

@@ -35,17 +35,17 @@ public class AppointmentController {
     @GetMapping("/simulador_citas")
     public String showAppointmentSimulator(Model model) {
 
-        model.addAttribute("availableServices", appointmentService.getAvailableServices());
-        
-        
-        model.addAttribute("bookedAppointments", appointmentService.getBookedAppointments());
-        
-       
-        LocalDate minDate = LocalDate.now().plusDays(1);
-        
-       
-        model.addAttribute("minDate", minDate.format(DateTimeFormatter.ISO_DATE));
-        
+    model.addAttribute("availableServices", appointmentService.getAvailableServices());
+
+    model.addAttribute("bookedAppointments", appointmentService.getBookedAppointments());
+
+    // Enviamos la lista completa de médicos (para poblar el combobox y permitir filtrado cliente-side)
+    model.addAttribute("allMedicos", appointmentService.getAllMedicos());
+
+    LocalDate minDate = LocalDate.now().plusDays(1);
+
+    model.addAttribute("minDate", minDate.format(DateTimeFormatter.ISO_DATE));
+
         return "simulador_citas"; // Retorna la vista
     }
 
@@ -55,10 +55,12 @@ public class AppointmentController {
 @PostMapping("/book_appointment")
 public String bookAppointment(
         @RequestParam("serviceId") int serviceId,
+        @RequestParam("medicoId") Long medicoId, // 👈 nuevo parámetro
         @RequestParam("date") LocalDate date,
         @RequestParam("time") LocalTime time,
         @RequestParam("clientName") String clientName,
         Model model) {
+
 
     LocalDateTime appointmentDateTime = LocalDateTime.of(date, time);
 
@@ -74,7 +76,8 @@ public String bookAppointment(
     } else {
         
         // 2. Procede a agendar la cita (Ya sabemos que está disponible)
-        boolean success = appointmentService.bookAppointment(serviceId, appointmentDateTime, clientName);
+        boolean success = appointmentService.bookAppointment(serviceId, medicoId, appointmentDateTime, clientName);
+
 
         if (success) {
             model.addAttribute("message", "¡Éxito! Su cita ha sido agendada con el servicio de " + appointmentService.getServiceById(serviceId).getName() + " para el " + appointmentDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")) + ".");
