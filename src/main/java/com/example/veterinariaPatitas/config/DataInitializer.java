@@ -1,9 +1,13 @@
 package com.example.veterinariaPatitas.config;
 
 import com.example.veterinariaPatitas.model.Medico;
+import com.example.veterinariaPatitas.model.Product;
 import com.example.veterinariaPatitas.model.ServiceVet;
 import com.example.veterinariaPatitas.repository.MedicoRepository;
+import com.example.veterinariaPatitas.repository.ProductRepository;
 import com.example.veterinariaPatitas.repository.ServiceVetRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +16,13 @@ import java.time.LocalTime;
 @Configuration
 public class DataInitializer {
 
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
+
     @Bean
     CommandLineRunner initDatabase(
-            ServiceVetRepository serviceRepo,
-            MedicoRepository medicoRepo) {
+        ServiceVetRepository serviceRepo,
+        MedicoRepository medicoRepo,
+        ProductRepository productRepo) {
         return args -> {
             // Crear servicios
             ServiceVet consultaGeneral = new ServiceVet();
@@ -57,6 +64,36 @@ public class DataInitializer {
             medico3.setHorarioFin(LocalTime.of(16, 0));
             medico3.setServicio(consultaGeneral);
             medicoRepo.save(medico3);
+
+            // Seed products if table empty
+            long existing = productRepo.count();
+            log.info("Existing productos count: {}", existing);
+            if (existing == 0) {
+                Product p1 = new Product();
+                p1.setName("Purina");
+                p1.setPrice(1200.0);
+                p1.setStock(10);
+                p1.setUnit("unidad");
+                productRepo.save(p1);
+
+                Product p2 = new Product();
+                p2.setName("Osito");
+                p2.setPrice(850.0);
+                p2.setStock(5);
+                p2.setUnit("unidad");
+                productRepo.save(p2);
+
+                Product p3 = new Product();
+                p3.setName("Pepon");
+                p3.setPrice(500.0);
+                p3.setStock(20);
+                p3.setUnit("unidad");
+                productRepo.save(p3);
+
+                log.info("Seeded default products into productos table (3 items)");
+            } else {
+                log.info("Skipped seeding products because table is not empty");
+            }
         };
     }
 }
