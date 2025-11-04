@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/citas.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+    <title>Simulador de Citas - Veterinaria Patitas</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          crossorigin="anonymous">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const serviceSelect = document.getElementById('serviceId');
+            const medicoSelect = document.getElementById('medicoId');
+            const timeSelect = document.getElementById('time');
+            
+            // Guarda todas las opciones originales de médicos
+            const originalMedicoOptions = Array.from(medicoSelect.options);
+            
+            function filterMedicos() {
+                const selectedServiceId = serviceSelect.value;
+                const selectedTime = timeSelect.value;
+                
+                // Reinicia el select de médicos
+                medicoSelect.innerHTML = '';
+                medicoSelect.appendChild(new Option('Seleccione un médico', ''));
+                
+                // Si no hay servicio seleccionado, no muestra médicos
+                if (!selectedServiceId) {
+                    return;
+                }
+                
+                // Filtra los médicos según el servicio seleccionado
+                originalMedicoOptions.forEach(option => {
+                    if (option.value === '') return; // Salta la opción "Seleccione un médico"
+                    
+                    const medicoServiceId = option.getAttribute('data-servicio-id');
+                    if (medicoServiceId === selectedServiceId) {
+                        // Si hay una hora seleccionada, verifica el horario del médico
+                        if (selectedTime) {
+                            const horarioInicio = option.getAttribute('data-horario-inicio');
+                            const horarioFin = option.getAttribute('data-horario-fin');
+                            if (selectedTime >= horarioInicio && selectedTime <= horarioFin) {
+                                medicoSelect.appendChild(option.cloneNode(true));
+                            }
+                        } else {
+                            medicoSelect.appendChild(option.cloneNode(true));
+                        }
+                    }
+                });
+            }
+            
+            // Eventos que disparan el filtrado
+            serviceSelect.addEventListener('change', filterMedicos);
+            timeSelect.addEventListener('change', filterMedicos);
+        });
+    </script>
+</head>
+<body>
+<header>
+         <div th:replace="fragments/navbar :: navbar"></div>
+    </header>
+    <div id="app" class="container-fluid">
+        <div class="main-content-box mx-auto p-4 p-md-5 my-5" style="max-width: 1000px;">
+        
+            <header class="text-center mb-5 pb-3 border-bottom">
+                <h1 class="display-6 fw-bolder text-dark text-uppercase">Agendamiento de Citas</h1>
+                <p class="lead text-secondary mt-2">Disponibilidad de Servicios Veterinarios</p>
+            </header>
+            
+            <!-- Mensaje de Notificación (Éxito o Error de Disponibilidad) -->
+            <div th:if="${message}" id="notification" 
+                 th:classappend="|alert-${messageType}|"
+                 class="alert mx-auto mb-4" role="alert">
+                <p th:text="${message}" class="mb-0 fw-bold"></p>
+            </div>
+
+            <div class="row">
+                
+                <!-- Columna 1: Formulario de Agendamiento -->
+                <section class="col-lg-6 mb-5">
+                    <h2 class="h5 fw-bold mb-4 text-secondary"><i class="fa-solid fa-calendar-check me-2 text-patitas"></i>Solicitar una Cita</h2>
+                    
+                    <form th:action="@{/book_appointment}" method="post" class="p-4 border rounded-3 shadow-sm">
+                        
+                        <!-- Campo Cliente -->
+                        <div class="mb-3">
+                            <label for="clientName" class="form-label fw-semibold">Nombre</label>
+                            <input type="text" class="form-control" id="clientName" name="clientName" required>
+                        </div>
+
+                        <!-- Campo Servicio -->
+                        <div class="mb-3">
+                            <label for="serviceId" class="form-label fw-semibold">Servicio Requerido</label>
+                            <select id="serviceId" name="serviceId" class="form-select" required>
+                                <option value="">Seleccione un servicio</option>
+                <option th:each="service : ${availableServices}"
+                    th:value="${service.id}"
+                    th:text="${service.name + ' (' + (service.duration != null ? service.duration : '—') + ' - S/. ' + #numbers.formatDecimal(service.price, 1, 2) + ')'}">
+                                    Consulta General (30 min - S/. 50.00)
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <!-- Campo Médico (combobox) -->
+                        <div class="mb-3">
+                            <label for="medicoId" class="form-label fw-semibold">Médico</label>
+                            <select id="medicoId" name="medicoId" class="form-select" required>
+                                <option value="">Seleccione un médico</option>
+                <option th:each="med : ${allMedicos}"
+                    th:value="${med.id}"
+                    th:text="${med.nombre + ' - ' + med.especialidad + ' (' + (med.horarioInicio != null ? #temporals.format(med.horarioInicio,'HH:mm') : '—') + ' - ' + (med.horarioFin != null ? #temporals.format(med.horarioFin,'HH:mm') : '—') + ')'}"
+                    th:attr="data-servicio-id=${med.servicio != null ? med.servicio.id : ''},data-horario-inicio=${med.horarioInicio != null ? #temporals.format(med.horarioInicio,'HH:mm') : ''},data-horario-fin=${med.horarioFin != null ? #temporals.format(med.horarioFin,'HH:mm') : ''}">
+                </option>
+                            </select>
+                            <div class="form-text">Elige un servicio y una hora para ver solo los médicos disponibles.</div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Campo Fecha -->
+                            <div class="col-md-6 mb-3">
+                                <label for="date" class="form-label fw-semibold">Fecha</label>
+                                <input type="date" class="form-control" id="date" name="date" 
+                                       th:min="${minDate}" required>
+                            </div>
+
+                            <!-- Campo Hora -->
+                            <div class="col-md-6 mb-3">
+                                <label for="time" class="form-label fw-semibold">Hora</label>
+                                <!-- Horarios de ejemplo: 9:00, 10:00, 11:00, 14:00, 15:00, 16:00 -->
+                                <select id="time" name="time" class="form-select" required>
+                                    <option value="">Seleccione hora</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-100 btn btn-patitas fw-bold py-2 mt-3">
+                            <i class="fa-solid fa-calendar-plus me-2"></i>
+                            Agendar Cita
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Columna 2: Citas Agendadas -->
+                <aside class="col-lg-6">
+                    <h2 class="h5 fw-bold mb-4 text-secondary"><i class="fa-solid fa-calendar-alt me-2 text-warning"></i>Citas Ocupadas</h2>
+                    
+                    <div th:if="${#lists.isEmpty(bookedAppointments)}" class="alert alert-info text-center">
+                        No hay citas agendadas aún.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(bookedAppointments)}">
+                        <ul class="list-group">
+                            <li th:each="appointment : ${bookedAppointments}" 
+                                class="list-group-item d-flex justify-content-between align-items-center booked-item mb-2 shadow-sm">
+                                
+                                <div>
+                                    <p class="fw-bold mb-0 text-dark" th:text="${appointment.service.name}"></p>
+                                    <p class="text-sm text-muted mb-0" th:text="${appointment.clientName}"></p>
+                                </div>
+                                <div class="text-end">
+                                    <!-- Formateamos la fecha y hora usando el objeto formatter del Modelo -->
+                                    <span class="badge bg-warning text-dark p-2 fw-bold" 
+                                          th:text="${#temporals.format(appointment.dateTime, 'dd-MM-yyyy')}"></span>
+                                    <br>
+                                    <span class="badge bg-patitas p-2 mt-1" 
+                                          th:text="${#temporals.format(appointment.dateTime, 'HH:mm')}"></span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            crossorigin="anonymous"></script>
+
+    <!-- Script: filtrar médicos por servicio y hora -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const serviceSelect = document.getElementById('serviceId');
+            const timeSelect = document.getElementById('time');
+            const dateInput = document.getElementById('date');
+            const medicoSelect = document.getElementById('medicoId');
+
+            // Guardamos las opciones originales (incluidas en el HTML desde el servidor)
+            const originalOptions = Array.from(medicoSelect.options).map(o => ({
+                value: o.value,
+                text: o.text,
+                servicioId: o.dataset.servicioId,
+                inicio: o.dataset.horarioInicio,
+                fin: o.dataset.horarioFin
+            }));
+
+            const toMinutes = s => {
+                if (!s) return null;
+                const parts = s.split(':');
+                return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+            };
+
+            function withinHorario(hourStr, inicioStr, finStr) {
+                if (!hourStr) return true; // si no hay hora seleccionada, no filtramos por horario
+                const h = toMinutes(hourStr);
+                const a = toMinutes(inicioStr);
+                const b = toMinutes(finStr);
+                if (a === null || b === null) return true; // si no hay horario definido del médico
+                return h >= a && h <= b;
+            }
+
+            function filterMedicos() {
+                const selService = serviceSelect.value;
+                const selTime = timeSelect.value;
+
+                // Limpiamos el select y ponemos el placeholder
+                medicoSelect.innerHTML = '';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.text = 'Seleccione un médico';
+                medicoSelect.appendChild(placeholder);
+
+                originalOptions.forEach(opt => {
+                    if (!opt.value) return; // omitimos el placeholder original
+                    // si se seleccionó servicio, filtramos por servicio asociado al médico
+                    if (selService && opt.servicioId && opt.servicioId !== selService) return;
+                    // filtramos por horario si se seleccionó hora
+                    if (selTime && !withinHorario(selTime, opt.inicio, opt.fin)) return;
+
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.text = opt.text;
+                    medicoSelect.appendChild(option);
+                });
+            }
+
+            serviceSelect.addEventListener('change', filterMedicos);
+            timeSelect.addEventListener('change', filterMedicos);
+            dateInput.addEventListener('change', filterMedicos);
+
+            // Ejecutar una vez al inicio para ajustar opciones
+            filterMedicos();
+        });
+    </script>
+
+</body>
+</html>
+
