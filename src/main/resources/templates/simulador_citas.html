@@ -118,18 +118,28 @@
                             <li th:each="appointment : ${bookedAppointments}" 
                                 class="list-group-item d-flex justify-content-between align-items-center booked-item mb-2 shadow-sm">
                                 
-                                <div>
-                                    <p class="fw-bold mb-0 text-dark" th:text="${appointment.service.name}"></p>
-                                    <p class="text-sm text-muted mb-0" th:text="${appointment.clientName}"></p>
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <p class="fw-bold mb-0 text-dark" th:text="${appointment.service.name}"></p>
+                                        <p class="text-sm text-muted mb-0" th:text="${appointment.clientName}"></p>
+                                    </div>
                                 </div>
-                                <div class="text-end">
-                                    <!-- Formateamos la fecha y hora usando el objeto formatter del Modelo -->
-                                    <span class="badge bg-warning text-dark p-2 fw-bold" 
-                                          th:text="${#temporals.format(appointment.dateTime, 'dd-MM-yyyy')}"></span>
-                                    <br>
-                                    <span class="badge bg-patitas p-2 mt-1" 
-                                          th:text="${#temporals.format(appointment.dateTime, 'HH:mm')}"></span>
-                                </div>
+                                
+                                <div class="text-end d-flex align-items-center">
+                                    <div>
+                                        <span class="badge bg-warning text-dark p-2 fw-bold" 
+                                            th:text="${#temporals.format(appointment.dateTime, 'dd-MM-yyyy')}"></span>
+                                        <br>
+                                        <span class="badge bg-patitas p-2 mt-1" 
+                                            th:text="${#temporals.format(appointment.dateTime, 'HH:mm')}"></span>
+                                    </div>
+                                    
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger ms-3"
+                                            title="Cancelar Cita"
+                                            th:attr="onclick='confirmDelete(\'' + ${appointment.id} + '\')'">
+                                        <i class="fa-solid fa-xmark"></i> </button>
+                                    </div>
                             </li>
                         </ul>
                     </div>
@@ -138,7 +148,43 @@
 
         </div>
     </div>
+
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Cancelación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas cancelar esta cita? Esta acción no se puede deshacer.
+                    <p class="mt-2 fw-bold text-danger" id="citaIdDisplay"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Sí, Cancelar Cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">¡Operación Exitosa!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
+                    <p class="fw-bold">Cita cancelada exitosamente.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
             crossorigin="anonymous"></script>
@@ -204,9 +250,78 @@
             timeSelect.addEventListener('change', filterMedicos);
             dateInput.addEventListener('change', filterMedicos);
 
+            // --- ESTO ES LO CLAVE PARA EL MODAL DE CONFIRMACIÓN ---
+            const confirmButton = document.getElementById('confirmDeleteButton');
+            const confirmModalElement = document.getElementById('confirmDeleteModal');
+            // Creamos la instancia del modal de confirmación AQUÍ
+            const confirmModal = new bootstrap.Modal(confirmModalElement); 
+            
+            // Y creamos la instancia del modal de éxito AQUÍ
+            const successModalElement = document.getElementById('successModal');
+            const successModal = new bootstrap.Modal(successModalElement);
+
+            confirmButton.addEventListener('click', () => {
+                if (appointmentIdToDelete) {
+                    // 🚨 Llamamos a la función de eliminación, pasándole AMBAS instancias
+                    deleteCita(appointmentIdToDelete, confirmModal, successModal);
+                }
+            });
+            // ----------------------------------------------------
+
             // Ejecutar una vez al inicio para ajustar opciones
             filterMedicos();
         });
+    </script>
+    <script th:inline="javascript">
+      // Variable global para guardar el ID de la cita seleccionada
+let appointmentIdToDelete = null;
+
+// 1. Función llamada por el botón 'X' (onclick)
+function confirmDelete(citaId) {
+    appointmentIdToDelete = citaId;
+    document.getElementById('citaIdDisplay').innerText = `ID de Cita: ${citaId}`;
+    
+    // Solo mostramos el modal (asumimos que la instancia ya se creó en DOMContentLoaded)
+    const myModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+    if (myModal) myModal.show();
+}
+
+// 2. Función que hace la llamada FETCH DELETE
+function deleteCita(citaId, confirmModalInstance, successModalInstance) {
+    
+    // Cierre inmediato del modal de confirmación
+    confirmModalInstance.hide(); 
+    
+    fetch('/citas/eliminar/' + citaId, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            
+            // 🚨 Muestra el modal de éxito INMEDIATAMENTE después del cierre
+            successModalInstance.show(); 
+            
+            // Recarga la página después de un breve retraso
+            setTimeout(() => {
+                window.location.reload(); 
+            }, 1200); 
+            
+        } else if (response.status === 404) {
+            alert("Error: La cita no fue encontrada. La página se recargará.");
+            window.location.reload();
+        } else {
+            alert("Error interno al cancelar la cita. La página se recargará.");
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error de red/conexión:', error);
+        alert("Error de conexión al servidor.");
+    });
+}
     </script>
 
 </body>

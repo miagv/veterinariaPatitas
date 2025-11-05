@@ -173,32 +173,53 @@ public class DataInitializer {
                 medicoRepo.save(m);
             }
 
-            // Seed products if table empty
+         
             long existing = productRepo.count();
             log.info("Existing productos count: {}", existing);
             if (existing == 0) {
                 Product p1 = new Product();
-                p1.setName("Purina");
-                p1.setPrice(1200.0);
-                p1.setStock(10);
-                p1.setUnit("unidad");
+                p1.setName("Shampoo Antipulgas para Perro");
+                p1.setPrice(49.90);
+                p1.setStock(20);
+                p1.setUnit("Frasco 250ml");
                 productRepo.save(p1);
 
                 Product p2 = new Product();
-                p2.setName("Osito");
-                p2.setPrice(850.0);
-                p2.setStock(5);
-                p2.setUnit("unidad");
+                p2.setName("Cepillo para Peinar");
+                p2.setPrice(24.50);
+                p2.setStock(15);
+                p2.setUnit("Unidad");
                 productRepo.save(p2);
 
                 Product p3 = new Product();
-                p3.setName("Pepon");
-                p3.setPrice(500.0);
-                p3.setStock(20);
-                p3.setUnit("unidad");
+                p3.setName("Manta para Dormir");
+                p3.setPrice(89.00);
+                p3.setStock(14);
+                p3.setUnit("Unidad");
                 productRepo.save(p3);
 
-                log.info("Seeded default products into productos table (3 items)");
+                Product p4 = new Product();
+                p4.setName("Camita para Perro - Cozy");
+                p4.setPrice(159.00);
+                p4.setStock(17);
+                p4.setUnit("Unidad");
+                productRepo.save(p4);
+
+                Product p5 = new Product();
+                p5.setName("Arenero para Gatos - Compacto");
+                p5.setPrice(79.90);
+                p5.setStock(10);
+                p5.setUnit("Unidad");
+                productRepo.save(p5);
+
+                Product p6 = new Product();
+                p6.setName("Comida Húmeda para Gato - Lata 400g");
+                p6.setPrice(12.50);
+                p6.setStock(5);
+                p6.setUnit("Lata 400g");
+                productRepo.save(p6);
+
+                log.info("Seeded default products into productos table (6 items)");
             } else {
                 log.info("Skipped seeding products because table is not empty");
             }

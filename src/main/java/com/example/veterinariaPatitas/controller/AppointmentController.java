@@ -5,6 +5,7 @@
 
 package com.example.veterinariaPatitas.controller;
 
+import com.example.veterinariaPatitas.model.Appointment; // 👈 NECESARIO para manejar el objeto cita
 import com.example.veterinariaPatitas.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.DeleteMapping; // 👈 NECESARIO para el método DELETE
+import org.springframework.web.bind.annotation.PathVariable; // 👈 NECESARIO para obtener el ID de la URL
+import org.springframework.web.bind.annotation.ResponseBody; // 👈 NECESARIO para devolver JSON/texto
+import org.springframework.http.ResponseEntity; // 👈 NECESARIO para devolver respuesta HTTP
+import java.util.Optional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,4 +97,28 @@ public String bookAppointment(
     // Recarga la vista con los datos actualizados
     return showAppointmentSimulator(model);
 }
+
+// Nuevo método para eliminar citas
+@DeleteMapping("/citas/eliminar/{id}") // 1. Mapea la URL DELETE /citas/eliminar/ID
+@ResponseBody
+public ResponseEntity<String> deleteAppointment(@PathVariable Long id) {
+    try {
+        // 2. Verifica si la cita existe antes de intentar borrarla (Buena práctica de seguridad)
+        Optional<Appointment> appointment = appointmentService.findById(id); 
+
+        if (appointment.isPresent()) {
+            // 3. Llama al servicio para eliminar
+            appointmentService.delete(id); 
+            // 4. Devuelve un código HTTP 200 (OK) al JavaScript
+            return ResponseEntity.ok("Cita eliminada exitosamente."); 
+        } else {
+            // 5. Devuelve un código HTTP 404 (No encontrada)
+            return ResponseEntity.notFound().build(); 
+        }
+    } catch (Exception e) {
+        // 6. Devuelve un código HTTP 500 (Error interno del servidor)
+        return ResponseEntity.status(500).body("Error al eliminar la cita: " + e.getMessage());
+    }
 }
+}
+

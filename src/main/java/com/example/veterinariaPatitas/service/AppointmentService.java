@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import java.util.Optional; // Asegúrate de que esta línea esté presente si no lo está.
+
 @Service
 public class AppointmentService {
 
@@ -85,4 +87,18 @@ public class AppointmentService {
     public List<Medico> getAllMedicos() {
         return medicoRepository.findAll();
     }
+
+    // 🌟 7. Obtener cita por ID (Necesario para que el Controller verifique su existencia)
+public Optional<Appointment> findById(Long id) {
+    // Optional<T> es una clase que puede o no contener un valor. 
+    // Es la forma estándar en Java de manejar valores que pueden ser null.
+    return appointmentRepository.findById(id);
+}
+
+// 🌟 8. Eliminar cita por ID
+public void delete(Long id) {
+    // deleteById() es un método ya proporcionado por JpaRepository que elimina 
+    // la entidad de la base de datos basada en su ID.
+    appointmentRepository.deleteById(id);
+}
 }
