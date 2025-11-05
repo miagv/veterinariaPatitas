@@ -24,21 +24,42 @@ public class DataInitializer {
         MedicoRepository medicoRepo,
         ProductRepository productRepo) {
         return args -> {
-            // Crear servicios
-            ServiceVet consultaGeneral = new ServiceVet();
-            consultaGeneral.setName("Consulta General");
-            consultaGeneral.setDescription("Revisión general de la mascota");
-            serviceRepo.save(consultaGeneral);
+            // Crear servicios (si no existen ya) -> evita duplicados entre data.sql y DataInitializer
+            ServiceVet consultaGeneral = serviceRepo.findAll().stream()
+                    .filter(s -> "Consulta General".equals(s.getName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ServiceVet s = new ServiceVet();
+                        s.setName("Consulta General");
+                        s.setDescription("Revisión general de la mascota");
+                        s.setPrice(50.0);
+                        s.setDuration("30min");
+                        return serviceRepo.save(s);
+                    });
 
-            ServiceVet vacunacion = new ServiceVet();
-            vacunacion.setName("Vacunación");
-            vacunacion.setDescription("Servicio de vacunación y refuerzos");
-            serviceRepo.save(vacunacion);
+            ServiceVet vacunacion = serviceRepo.findAll().stream()
+                    .filter(s -> "Vacunación".equals(s.getName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ServiceVet s = new ServiceVet();
+                        s.setName("Vacunación");
+                        s.setDescription("Servicio de vacunación y refuerzos");
+                        s.setPrice(30.0);
+                        s.setDuration("15min");
+                        return serviceRepo.save(s);
+                    });
 
-            ServiceVet cirugia = new ServiceVet();
-            cirugia.setName("Cirugía");
-            cirugia.setDescription("Procedimientos quirúrgicos");
-            serviceRepo.save(cirugia);
+            ServiceVet cirugia = serviceRepo.findAll().stream()
+                    .filter(s -> "Cirugía".equals(s.getName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ServiceVet s = new ServiceVet();
+                        s.setName("Cirugía");
+                        s.setDescription("Procedimientos quirúrgicos");
+                        s.setPrice(250.0);
+                        s.setDuration("120min");
+                        return serviceRepo.save(s);
+                    });
 
             // Crear médicos
             Medico medico1 = new Medico();
@@ -64,6 +85,93 @@ public class DataInitializer {
             medico3.setHorarioFin(LocalTime.of(16, 0));
             medico3.setServicio(consultaGeneral);
             medicoRepo.save(medico3);
+
+            // Crear servicios adicionales que puedan venir desde data.sql
+            ServiceVet grooming = serviceRepo.findAll().stream()
+                    .filter(s -> "Grooming".equals(s.getName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ServiceVet s = new ServiceVet();
+                        s.setName("Grooming");
+                        s.setDescription("Servicio de peluquería y baño");
+                        s.setPrice(40.0);
+                        s.setDuration("45min");
+                        return serviceRepo.save(s);
+                    });
+
+            ServiceVet emergencia = serviceRepo.findAll().stream()
+                    .filter(s -> "Emergencia".equals(s.getName()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ServiceVet s = new ServiceVet();
+                        s.setName("Emergencia");
+                        s.setDescription("Atención de emergencias 24/7");
+                        s.setPrice(0.0);
+                        s.setDuration("varios");
+                        return serviceRepo.save(s);
+                    });
+
+            // Añadir médicos extra que aparecen en la sección "Sobre Nosotros"
+            // Solo los creamos si no existen por nombre
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Aimed Gonzales".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Aimed Gonzales");
+                m.setEspecialidad("Cirugía y Diagnóstico por Imagen");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(cirugia);
+                medicoRepo.save(m);
+            }
+
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Angel Shinno".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Angel Shinno");
+                m.setEspecialidad("Vacunación, Desparasitación y Nutrición");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(vacunacion);
+                medicoRepo.save(m);
+            }
+
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Norvan Sifuentes".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Norvan Sifuentes");
+                m.setEspecialidad("Dermatología");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(consultaGeneral);
+                medicoRepo.save(m);
+            }
+
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Angel Aguirre".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Angel Aguirre");
+                m.setEspecialidad("Traumatología");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(consultaGeneral);
+                medicoRepo.save(m);
+            }
+
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Mario Flores".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Mario Flores");
+                m.setEspecialidad("Dermatología");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(consultaGeneral);
+                medicoRepo.save(m);
+            }
+
+            if (medicoRepo.findAll().stream().noneMatch(m -> "Rolando Campos".equals(m.getNombre()))) {
+                Medico m = new Medico();
+                m.setNombre("Rolando Campos");
+                m.setEspecialidad("Laboratorio Clínico y Peluquería Canina y Felina");
+                m.setHorarioInicio(LocalTime.of(9, 0));
+                m.setHorarioFin(LocalTime.of(17, 0));
+                m.setServicio(grooming);
+                medicoRepo.save(m);
+            }
 
             // Seed products if table empty
             long existing = productRepo.count();
