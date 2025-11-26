@@ -71,8 +71,84 @@
    <footer>
         <p>&copy; 2025 Veterinaria PATITAS. Todos los derechos reservados.</p>
     </footer>
+    <div class="modal fade" id="roleLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login (Trabajador / Administrador)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="roleLoginForm">
+                        <div class="mb-2">
+                            <label>Usuario</label>
+                            <input type="text" id="roleUsername" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label>Contraseña</label>
+                            <input type="password" id="rolePassword" class="form-control" required>
+                        </div>
+                        <div id="roleLoginError" class="text-danger" style="display:none"></div>
+                        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script>
+    document.getElementById('roleLoginForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const user = document.getElementById('roleUsername').value;
+        const pass = document.getElementById('rolePassword').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({username: user, password: pass})
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                document.getElementById('roleLoginError').innerText = data.error || 'Error de login. Credenciales incorrectas.';
+                document.getElementById('roleLoginError').style.display = 'block';
+                return;
+            }
+            
+            // Éxito: Guardar datos y mostrar saludo temporal
+            localStorage.setItem('jwtToken', data.token);
+            localStorage.setItem('jwtRole', data.role);
+            localStorage.setItem('jwtUser', data.username);
+
+            const roleDisplay = data.role === 'ADMIN' ? 'Administrador' : 'Trabajador';
+            
+            const modalTitle = document.querySelector('#roleLoginModal .modal-title');
+            if (modalTitle) {
+                modalTitle.innerHTML = `<i class="fa-solid fa-check-circle text-success"></i> ¡Hola, ${roleDisplay}! Redirigiendo...`;
+            }
+            document.getElementById('roleLoginForm').style.display = 'none';
+            
+            setTimeout(() => {
+                const modalEl = document.querySelector('#roleLoginModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                location.href = "/"; // Redirección al dashboard
+            }, 1000); 
+            
+        } catch (err) {
+            console.error(err);
+            document.getElementById('roleLoginError').innerText = 'Error de conexión con el servidor.';
+            document.getElementById('roleLoginError').style.display = 'block';
+        }
+    });
+    </script>
+
+    <script th:src="@{/js/navbar_logic.js}"></script>
     <script th:src="@{/js/animacion.js}"></script>
     <script th:src="@{/js/script.js}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+   
 </body>
 </html>

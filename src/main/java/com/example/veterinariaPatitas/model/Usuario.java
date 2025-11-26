@@ -16,11 +16,15 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasena;
 
+    @Column(nullable = false)
+    private String role; // ADMIN o TRABAJADOR
+
     public Usuario() {}
 
-    public Usuario(String usuario, String contrasena) {
+    public Usuario(String usuario, String contrasena, String role) {
         this.usuario = usuario;
         this.contrasena = contrasena;
+        this.role = role;
     }
 
     // Getters y setters
@@ -47,5 +51,12 @@ public class Usuario {
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
     }
-}
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+}
