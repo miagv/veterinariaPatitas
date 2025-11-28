@@ -1,15 +1,16 @@
 package com.example.veterinariaPatitas.controller;
 
-
 import com.example.veterinariaPatitas.model.Usuario;
 import com.example.veterinariaPatitas.repository.UsuarioRepository;
 import com.example.veterinariaPatitas.security.JwtUtil;
-import com.example.veterinariaPatitas.security.payload.LoginRequest; // Usa el paquete que creaste
+import com.example.veterinariaPatitas.security.payload.LoginRequest; 
+import com.example.veterinariaPatitas.security.payload.RegisterRequest; // NUEVO
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder; // NUEVO
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,12 +28,18 @@ public class JwtAuthenticationController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired 
+    private PasswordEncoder passwordEncoder; // NUEVO
 
+    // =======================================================
+    // MÉTODO DE LOGIN (Se mantiene igual, maneja CLIENTE y TRABAJADOR)
+    // =======================================================
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         
         try {
-            // 1. Intenta autenticar al usuario usando el AuthenticationManager
+            // Intenta autenticar al usuario (usa CustomUserDetailsService y PasswordEncoder)
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
@@ -40,14 +47,13 @@ public class JwtAuthenticationController {
                     )
             );
 
-            // 2. Si es exitoso, busca el rol en la base de datos
+            // Si es exitoso, busca el rol
             Optional<Usuario> userOptional = usuarioRepository.findByUsuario(loginRequest.getUsername());
             String role = userOptional.isPresent() ? userOptional.get().getRole() : "USER";
 
-            // 3. Generar el Token JWT
+            // Genera y devuelve el token JWT
             String jwt = jwtUtil.generateToken(loginRequest.getUsername(), role);
 
-            // 4. Devolver el token y los datos
             return ResponseEntity.ok(Map.of(
                     "token", jwt,
                     "username", loginRequest.getUsername(),
@@ -55,9 +61,38 @@ public class JwtAuthenticationController {
             ));
 
         } catch (Exception e) {
-            // Manejar errores de autenticación
-            // NOTA: Aquí atrapa cualquier error, incluyendo UsernameNotFoundException o BadCredentialsException
             return ResponseEntity.status(401).body(Map.of("error", "Credenciales incorrectas."));
         }
+    }
+    
+    // =======================================================
+    // NUEVO ENDPOINT DE REGISTRO (Solo para CLIENTES)
+    // =======================================================
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+        
+        if (usuarioRepository.existsByUsuario(registerRequest.getUsername())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", "El nombre de usuario ya está en uso."));
+        }
+        
+        // Crea y guarda el nuevo usuario con rol CLIENTE
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setUsuario(registerRequest.getUsername());
+        nuevoUsuario.setContrasena(passwordEncoder.encode(registerRequest.getPassword()));
+        nuevoUsuario.setRole("CLIENTE"); // Rol fijo para nuevos registros
+        
+        usuarioRepository.save(nuevoUsuario);
+        
+        // Logea automáticamente al cliente recién registrado
+        String jwt = jwtUtil.generateToken(nuevoUsuario.getUsuario(), nuevoUsuario.getRole());
+        
+        return ResponseEntity.ok(Map.of(
+                "token", jwt,
+                "username", nuevoUsuario.getUsuario(),
+                "role", nuevoUsuario.getRole(),
+                "message", "Registro exitoso."
+        ));
     }
 }

@@ -15,17 +15,7 @@ public class InitUsersConfig {
                                        PasswordEncoder encoder) {
         return args -> {
 
-            // ===== ADMIN =====
-            Usuario admin = usuarioRepository.findByUsuario("admin")
-                    .orElse(new Usuario());
-
-            admin.setUsuario("admin");
-            admin.setContrasena(encoder.encode("123456"));
-            admin.setRole("ADMIN");
-            usuarioRepository.save(admin);
-            System.out.println("ADMIN actualizado/creado ✔");
-
-            // ===== TRABAJADOR =====
+            // ===== TRABAJADOR PREDETERMINADO =====
             Usuario trabajador = usuarioRepository.findByUsuario("trabajador")
                     .orElse(new Usuario());
 
@@ -34,7 +24,15 @@ public class InitUsersConfig {
             trabajador.setRole("TRABAJADOR");
             usuarioRepository.save(trabajador);
             System.out.println("TRABAJADOR actualizado/creado ✔");
+
+            // ===== CLIENTE DE PRUEBA (Opcional) =====
+            Usuario clientePrueba = usuarioRepository.findByUsuario("cliente1")
+                    .orElse(new Usuario());
+            clientePrueba.setUsuario("cliente1");
+            clientePrueba.setContrasena(encoder.encode("123456"));
+            clientePrueba.setRole("CLIENTE"); 
+            usuarioRepository.save(clientePrueba);
+            System.out.println("CLIENTE de prueba actualizado/creado ✔");
         };
     }
-
 }
