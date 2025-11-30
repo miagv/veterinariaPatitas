@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-
-import java.util.Optional; // Asegúrate de que esta línea esté presente si no lo está.
+import java.util.Optional; 
 
 @Service
 public class AppointmentService {
@@ -88,17 +87,62 @@ public class AppointmentService {
         return medicoRepository.findAll();
     }
 
-    // 🌟 7. Obtener cita por ID (Necesario para que el Controller verifique su existencia)
-public Optional<Appointment> findById(Long id) {
-    // Optional<T> es una clase que puede o no contener un valor. 
-    // Es la forma estándar en Java de manejar valores que pueden ser null.
-    return appointmentRepository.findById(id);
-}
+    // 🌟 7. Obtener cita por ID (Usado por los Controllers)
+    public Optional<Appointment> findById(Long id) {
+        return appointmentRepository.findById(id);
+    }
 
-// 🌟 8. Eliminar cita por ID
-public void delete(Long id) {
-    // deleteById() es un método ya proporcionado por JpaRepository que elimina 
-    // la entidad de la base de datos basada en su ID.
-    appointmentRepository.deleteById(id);
+    // 🌟 8. Eliminar cita por ID
+    public void delete(Long id) {
+        appointmentRepository.deleteById(id);
+    }
+
+// Archivo: AppointmentService.java
+
+// ... (dentro de la clase AppointmentService) ...
+
+// ===============================================
+// === 🌟 9. MÉTODO DE ACTUALIZACIÓN (VERSIÓN FINAL CORREGIDA) ===
+// ===============================================
+
+public Appointment updateAppointment(Long id, Appointment updatedAppointment) {
+    
+    // 1. Obtener la cita existente
+    Appointment existingAppointment = appointmentRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada con ID: " + id));
+
+    // 2. Verificar la disponibilidad de la NUEVA fecha/hora
+    LocalDateTime newDateTime = updatedAppointment.getDateTime();
+    
+    if (!existingAppointment.getDateTime().isEqual(newDateTime) && appointmentRepository.existsByDateTime(newDateTime)) {
+        throw new IllegalArgumentException("Error: La nueva hora seleccionada ya está ocupada por otra cita.");
+    }
+
+    // 3. Aplicar los cambios
+    existingAppointment.setDateTime(newDateTime);
+    
+    // CORRECCIÓN para evitar NullPointerException y la comparación int/null
+    if (updatedAppointment.getService() != null && updatedAppointment.getService().getId() != null) {
+        // Almacenamos el ID de ServiceVet (que puede ser Integer)
+        Integer serviceId = updatedAppointment.getService().getId(); 
+
+        ServiceVet newService = serviceRepository.findById(serviceId)
+            .orElseThrow(() -> new IllegalArgumentException("Servicio no encontrado."));
+        existingAppointment.setService(newService);
+    }
+    
+    // CORRECCIÓN para evitar NullPointerException
+    if (updatedAppointment.getMedico() != null && updatedAppointment.getMedico().getId() != null) {
+        Long medicoId = updatedAppointment.getMedico().getId(); 
+        
+        Medico newMedico = medicoRepository.findById(medicoId)
+            .orElseThrow(() -> new IllegalArgumentException("Médico no encontrado."));
+        existingAppointment.setMedico(newMedico);
+    }
+    
+    existingAppointment.setClientName(updatedAppointment.getClientName());
+
+    // 4. Guardar y devolver
+    return appointmentRepository.save(existingAppointment);
 }
 }

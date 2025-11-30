@@ -15,7 +15,7 @@ public class ServiceVet {
 
     @Id                     
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
-    private int id;
+    private Integer id;
 
     @Column(nullable = false, length = 100) 
     private String name;
@@ -36,7 +36,7 @@ public class ServiceVet {
     }
 
     
-    public ServiceVet(int id, String name, String description, double price, String duration) {
+    public ServiceVet(Integer id, String name, String description, double price, String duration) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -46,11 +46,11 @@ public class ServiceVet {
     }
 
     
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
