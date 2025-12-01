@@ -133,4 +133,22 @@ public class AppointmentService {
         }
         return "N/A";
     }
+    public Double getIngresosCitasHoy() {
+    LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
+    LocalDateTime endOfDay = LocalDateTime.now().with(LocalTime.MAX);
+    
+    // 1. Obtener todas las citas para hoy usando el nuevo método del repositorio
+    List<Appointment> citasDeHoy = appointmentRepository.findByDateTimeBetween(startOfDay, endOfDay);
+    
+    // 2. Sumar el precio de los servicios de cada cita
+    return citasDeHoy.stream()
+            .mapToDouble(cita -> {
+                // Asegura que la relación service no es nula antes de obtener el precio
+                if (cita.getService() != null) {
+                    return cita.getService().getPrice();
+                }
+                return 0.0;
+            })
+            .sum();
+}
 }

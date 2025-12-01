@@ -32,6 +32,10 @@ public class DashboardController {
             // --- Total de ventas hoy ---
             Double totalVentasHoy = salesService.getTotalVentasHoy();
             if (totalVentasHoy == null) totalVentasHoy = 0.0;
+            
+            // ⭐ NUEVO: Ingresos de Citas Hoy 
+            Double ingresosCitasHoy = appointmentService.getIngresosCitasHoy();
+            if (ingresosCitasHoy == null) ingresosCitasHoy = 0.0;
 
             // --- Ventas por mes ---
             Map<String, Double> ventasMap = salesService.getVentasPorMes();
@@ -52,6 +56,8 @@ public class DashboardController {
             // --- Agregar al modelo ---
             model.addAttribute("totalVentasHoy", totalVentasHoy);
             model.addAttribute("citasPendientes", citasPendientes);
+            // ⭐ NUEVO: Agregar la métrica de ingresos de citas
+            model.addAttribute("ingresosCitasHoy", ingresosCitasHoy); 
             model.addAttribute("ventasJson", ventasJson);
             model.addAttribute("citasJson", citasJson);
 
@@ -60,6 +66,8 @@ public class DashboardController {
             // Valores por defecto para evitar errores 500
             model.addAttribute("totalVentasHoy", 0.0);
             model.addAttribute("citasPendientes", 0L);
+            // ⭐ NUEVO: Valor por defecto
+            model.addAttribute("ingresosCitasHoy", 0.0);
             model.addAttribute("ventasJson", "{}");
             model.addAttribute("citasJson", "{}");
         }

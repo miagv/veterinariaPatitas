@@ -25,4 +25,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "GROUP BY YEAR(a.dateTime), MONTH(a.dateTime) " + 
            "ORDER BY YEAR(a.dateTime) ASC, MONTH(a.dateTime) ASC")
     List<Object[]> countAppointmentsPerMonth();
+    List<Appointment> findByDateTimeBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
 }
