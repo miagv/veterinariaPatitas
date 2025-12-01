@@ -1,7 +1,5 @@
 package com.example.veterinariaPatitas.service;
 
-
-
 import com.example.veterinariaPatitas.model.Usuario;
 import com.example.veterinariaPatitas.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +21,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario u = usuarioRepository.findByUsuario(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
+        // ✅ CRÍTICO: Construcción robusta de la colección de autoridades
+        // Asegura que solo se usa la cadena del rol de la base de datos ("TRABAJADOR")
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(u.getRole()));
+
         return User.builder()
                 .username(u.getUsuario())
                 .password(u.getContrasena())
-                .authorities("ROLE_" + u.getRole()) // ADMIN o TRABAJADOR
+                .authorities(authorities) 
                 .build();
     }
 }

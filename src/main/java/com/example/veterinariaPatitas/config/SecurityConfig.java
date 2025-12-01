@@ -1,78 +1,96 @@
 package com.example.veterinariaPatitas.config;
 
-import com.example.veterinariaPatitas.security.JwtFilter; 
+import com.example.veterinariaPatitas.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // 👈 NUEVO: Importación para PreAuthorize
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy; 
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; 
 
-// 👈 PASO 1: HABILITAR LA SEGURIDAD A NIVEL DE MÉTODO
 @Configuration
-@EnableMethodSecurity(securedEnabled = true) // Habilita @PreAuthorize y @Secured
+@EnableMethodSecurity
 public class SecurityConfig {
 
-private final JwtFilter jwtFilter;
- public SecurityConfig(JwtFilter jwtFilter) {
- this.jwtFilter = jwtFilter;
- }
+    private final JwtFilter jwtFilter;
 
-@Bean
- public PasswordEncoder passwordEncoder() {
-return new BCryptPasswordEncoder();
- }
+    // Asumimos que JwtFilter también ha sido corregido para no añadir "ROLE_"
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
- @Bean
- public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-return authenticationConfiguration.getAuthenticationManager();
- }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
- @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
- http
- .csrf(csrf -> csrf.disable()) 
- .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        http
+                .csrf(csrf -> csrf.disable())
 
-.authorizeHttpRequests(auth -> auth
- 
-// Rutas Públicas (ESTÁTICOS Y PÁGINAS PRINCIPALES)
- .requestMatchers(
- "/", "/login", "/logout", 
- "/css/**", "/js/**", "/img/**", "/favicon.ico", 
- "/sobre_nosotros", "/adoptar", "/envia_mensaje", "/trabaja",
- "/upload", "/postular",
-                            "/simulador_citas", "/book_appointment" // 👈 Rutas de cliente/citas públicas
- ).permitAll()
- // Endpoints de Auth: /login y /register son públicos
- .requestMatchers("/api/auth/login", "/api/auth/register").permitAll() 
- 
-                        // PASO 2: Permite el acceso a todas las rutas /api/** a usuarios AUTENTICADOS.
-                        // La restricción de ROL (TRABAJADOR) se aplica en el controlador con @PreAuthorize.
- .requestMatchers("/api/**").authenticated() 
- .anyRequest().permitAll()
-)
- .formLogin(form -> form
- .loginPage("/login")
-.loginProcessingUrl("/login")
- .usernameParameter("usuario")
- .passwordParameter("contrasena")
- .defaultSuccessUrl("/", true)
- .permitAll()
- )
- .logout(logout -> logout
- .logoutUrl("/logout")
- .logoutSuccessUrl("/login?logout=true")
-.permitAll()
- );
+                // 1. ✅ CRÍTICO: Política de sesión para Thymeleaf
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) 
+                )
 
- http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
 
- return http.build();
- }
+                        // 2. ✅ CRÍTICO: Permite todos los estáticos y rutas públicas (¡Arregla el menú desarmado!)
+                        .requestMatchers(
+                                "/", "/login", "/logout",
+                                "/css/**", "/js/**", "/img/**", "/favicon.ico",
+                                "/sobre_nosotros", "/adoptar", "/envia_mensaje",
+                                "/trabaja", "/upload", "/postular",
+                                "/simulador_citas", "/book_appointment",
+                                "/simulador_ventas", "/api/auth/login", "/api/auth/register"
+                        ).permitAll()
+
+                        // 3. ✅ CRÍTICO: Regla de acceso sin el prefijo ROLE_
+                        .requestMatchers("/dashboard")
+                        .hasAuthority("TRABAJADOR") // Debe coincidir con CustomUserDetailsService
+
+                        // Rutas API protegidas
+                        .requestMatchers("/api/**")
+                        .authenticated()
+
+                        .anyRequest().permitAll()
+                )
+                
+                // 4. ✅ CRÍTICO: Configuración del Form Login para manejar el POST /login
+                .formLogin(form -> form
+                    .loginPage("/login")
+                    .loginProcessingUrl("/login") // URL donde se envían los datos del formulario
+                    .usernameParameter("usuario") // Nombre del campo 'username' en tu login.html
+                    .passwordParameter("contrasena") // Nombre del campo 'password' en tu login.html
+                    .defaultSuccessUrl("/dashboard", true) // Redirección exitosa
+                    .permitAll()
+                )
+                
+                // Configuración de Logout
+                .logout(logout -> logout
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/login?logout=true")
+                    .deleteCookies("JSESSIONID")
+                    .permitAll()
+                );
+
+        // Añadir filtro JWT para APIs
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+    
+    // Configuración de Beans para autenticación y encriptación
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

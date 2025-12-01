@@ -171,11 +171,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const allNavItems = document.querySelectorAll(".nav-item:not(#nav-user-menu):not(#nav-login-link)");
 
-    const gestionarVentasItem =
-        document.querySelector("a.dropdown-item[href='/simulador_ventas']")?.parentElement;
+    const dashboardItem =
+        document.querySelector("a.dropdown-item[href='/dashboard']")?.parentElement;
 
-    const gestionarCitasItem =
-        document.querySelector("a.dropdown-item[href='/simulador_citas']")?.parentElement;
+    
 
     if (!token) {
         loginItem?.classList.remove("d-none");
@@ -183,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         allNavItems.forEach(i => i.style.display = "block");
 
-        if (gestionarVentasItem) gestionarVentasItem.style.display = "none";
-        if (gestionarCitasItem) gestionarCitasItem.style.display = "none";
+        if (dashboardItem) dashboardItem.style.display = "none";
+        
     }
     else if (role === "CLIENTE") {
         loginItem?.classList.add("d-none");
@@ -192,8 +191,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         allNavItems.forEach(i => i.style.display = "block");
 
-        if (gestionarVentasItem) gestionarVentasItem.style.display = "none";
-        if (gestionarCitasItem) gestionarCitasItem.style.display = "none";
+        if (dashboardItem) dashboardItem.style.display = "none";
+      
 
         const userDropdown = userMenuItem.querySelector('#userDropdown');
         if (userDropdown) userDropdown.innerHTML = "👋 Hola, <b>Cliente</b>";
@@ -204,15 +203,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         allNavItems.forEach(item => {
             const href = item.querySelector("a")?.getAttribute("href");
-            if (href === "/simulador_ventas" || href === "/simulador_citas") {
+            if (href === "/dashboard") {
                 item.style.display = "block";
             } else {
                 item.style.display = "none";
             }
         });
 
-        if (gestionarVentasItem) gestionarVentasItem.style.display = "block";
-        if (gestionarCitasItem) gestionarCitasItem.style.display = "block";
+        if (dashboardItem) dashboardItem.style.display = "block";
+        
 
         const userDropdown = userMenuItem.querySelector('#userDropdown');
         if (userDropdown) userDropdown.innerHTML = "👋 Hola, <b>Trabajador</b>";

@@ -10,8 +10,10 @@ import com.example.veterinariaPatitas.repository.MedicoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Map;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.LinkedHashMap; // Para mantener el orden de los meses
 import java.util.List;
 import java.util.Optional; 
 
@@ -91,58 +93,44 @@ public class AppointmentService {
     public Optional<Appointment> findById(Long id) {
         return appointmentRepository.findById(id);
     }
+    
+// --- MÉTODOS DASHBOARD IMPLEMENTADOS ---
 
-    // 🌟 8. Eliminar cita por ID
-    public void delete(Long id) {
-        appointmentRepository.deleteById(id);
+    // 🌟 8. Cuenta el número de citas que están pendientes (futuras)
+    public Long contarCitasPendientes() {
+        // Usa el método del repositorio con la fecha y hora actual
+        return appointmentRepository.countByDateTimeAfter(LocalDateTime.now());
     }
 
-// Archivo: AppointmentService.java
-
-// ... (dentro de la clase AppointmentService) ...
-
-// ===============================================
-// === 🌟 9. MÉTODO DE ACTUALIZACIÓN (VERSIÓN FINAL CORREGIDA) ===
-// ===============================================
-
-public Appointment updateAppointment(Long id, Appointment updatedAppointment) {
-    
-    // 1. Obtener la cita existente
-    Appointment existingAppointment = appointmentRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada con ID: " + id));
-
-    // 2. Verificar la disponibilidad de la NUEVA fecha/hora
-    LocalDateTime newDateTime = updatedAppointment.getDateTime();
-    
-    if (!existingAppointment.getDateTime().isEqual(newDateTime) && appointmentRepository.existsByDateTime(newDateTime)) {
-        throw new IllegalArgumentException("Error: La nueva hora seleccionada ya está ocupada por otra cita.");
-    }
-
-    // 3. Aplicar los cambios
-    existingAppointment.setDateTime(newDateTime);
-    
-    // CORRECCIÓN para evitar NullPointerException y la comparación int/null
-    if (updatedAppointment.getService() != null && updatedAppointment.getService().getId() != null) {
-        // Almacenamos el ID de ServiceVet (que puede ser Integer)
-        Integer serviceId = updatedAppointment.getService().getId(); 
-
-        ServiceVet newService = serviceRepository.findById(serviceId)
-            .orElseThrow(() -> new IllegalArgumentException("Servicio no encontrado."));
-        existingAppointment.setService(newService);
-    }
-    
-    // CORRECCIÓN para evitar NullPointerException
-    if (updatedAppointment.getMedico() != null && updatedAppointment.getMedico().getId() != null) {
-        Long medicoId = updatedAppointment.getMedico().getId(); 
+    // 🌟 9. Devuelve un mapa de la cantidad de citas por mes para los gráficos.
+    public Map<String, Long> getCitasPorMes() {
+        // Llama a la consulta compleja del repositorio
+        List<Object[]> monthlyCitasData = appointmentRepository.countAppointmentsPerMonth();
+        Map<String, Long> data = new LinkedHashMap<>();
         
-        Medico newMedico = medicoRepository.findById(medicoId)
-            .orElseThrow(() -> new IllegalArgumentException("Médico no encontrado."));
-        existingAppointment.setMedico(newMedico);
+        // Procesar los resultados (se espera [año, mes, total])
+        for (Object[] row : monthlyCitasData) {
+            Integer monthIndex = (Integer) row[1]; // El mes (ej: 11 para Noviembre)
+            Long total = (Long) row[2];          // El conteo de citas
+            
+            // Convertir el índice numérico del mes a su nombre abreviado
+            String monthName = getMonthName(monthIndex); 
+            
+            data.put(monthName, total);
+        }
+        return data;
     }
-    
-    existingAppointment.setClientName(updatedAppointment.getClientName());
 
-    // 4. Guardar y devolver
-    return appointmentRepository.save(existingAppointment);
-}
+    /**
+     * Método auxiliar para convertir el índice numérico del mes (1-12) a su nombre abreviado.
+     */
+    private String getMonthName(int month) {
+        // Array de nombres de meses
+        String[] names = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sept", "Oct", "Nov", "Dic"};
+        // El índice del mes en SQL (1-12) se mapea a nuestro array (0-11)
+        if (month >= 1 && month <= 12) {
+            return names[month - 1];
+        }
+        return "N/A";
+    }
 }

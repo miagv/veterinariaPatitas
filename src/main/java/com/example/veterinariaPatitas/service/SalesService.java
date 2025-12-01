@@ -6,14 +6,21 @@
 package com.example.veterinariaPatitas.service;
 
 import com.example.veterinariaPatitas.model.Product;
+import com.example.veterinariaPatitas.model.Sale;
 import com.example.veterinariaPatitas.repository.ProductRepository;
+import com.example.veterinariaPatitas.repository.SaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.util.Map; 
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.LinkedHashMap; // Importado para mantener el orden de los meses
 
 @Service
 public class SalesService {
@@ -22,6 +29,9 @@ public class SalesService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private SaleRepository saleRepository; // Repositorio de Ventas inyectado
 
     
     public List<Product> getInitialProducts() {
@@ -96,39 +106,81 @@ public class SalesService {
                 productRepository.save(dbProduct); 
             });
         }
-
         
+        // --- Cálculo de Totales para el registro de la Venta ---
+        double subtotal = cart.stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+        double tax = subtotal * IGV_RATE;
+        double total = subtotal + tax; 
+        
+        // -----------------------------------------------------------
+        // === REGISTRAR LA TRANSACCIÓN DE VENTA FINALIZADA ===
+        // -----------------------------------------------------------
+        Sale newSale = new Sale(total, LocalDateTime.now()); 
+        saleRepository.save(newSale); 
+        // -----------------------------------------------------------
+        
+        // Devuelve el carrito para que el controlador lo use en la redirección
         return new ArrayList<>(cart);
     }
     
     // =======================================================
-    // === MÉTODOS DE GESTIÓN (USADOS POR ProductManagementController) ===
+    // === MÉTODOS DEL DASHBOARD ===
     // =======================================================
 
     /**
-     * CORRECCIÓN: Método para exponer la búsqueda de producto por ID al controlador.
-     * @param id ID del producto.
-     * @return Producto opcional.
+     * Calcula y devuelve el total de dinero vendido en el día actual usando SaleRepository.
      */
+    public Double getTotalVentasHoy() {
+        LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
+        LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
+        
+        // Llama al método del repositorio. Devuelve 0.0 si el resultado es null (no hay ventas).
+        return Optional.ofNullable(saleRepository.sumTotalByDate(startOfDay, endOfDay)).orElse(0.0); 
+    }
+
+    /**
+     * Devuelve un mapa de ventas mensuales para los gráficos usando SaleRepository.
+     */
+    public Map<String, Double> getVentasPorMes() {
+        List<Object[]> monthlySalesData = saleRepository.findTotalSalesPerMonth();
+        Map<String, Double> data = new LinkedHashMap<>();
+        
+        for (Object[] row : monthlySalesData) {
+            // Se asume el orden [año (Integer), mes (Integer), total (Double)]
+            Integer monthIndex = (Integer) row[1]; 
+            Double total = (Double) row[2];
+            String monthName = getMonthName(monthIndex); 
+            
+            data.put(monthName, total);
+        }
+        return data;
+    }
+
+    /**
+     * Método auxiliar para convertir número de mes (1-12) a nombre abreviado.
+     */
+    private String getMonthName(int month) {
+        String[] names = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sept", "Oct", "Nov", "Dic"};
+        if (month >= 1 && month <= 12) {
+            return names[month - 1];
+        }
+        return "N/A";
+    }
+
+    // =======================================================
+    // === MÉTODOS DE GESTIÓN (existentes) ===
+    // =======================================================
+
     public Optional<Product> getProductById(int id) {
         return productRepository.findById(id);
     }
 
-    /**
-     * Guarda un producto nuevo o actualiza uno existente (incluye stock).
-     * @param product El objeto Producto a guardar/actualizar.
-     * @return El producto guardado.
-     */
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }
 
-    /**
-     * Añade stock al producto existente.
-     * @param productId ID del producto.
-     * @param addedStock Cantidad de stock a añadir.
-     * @return El producto actualizado.
-     */
     public Optional<Product> addStock(int productId, int addedStock) {
         Optional<Product> productOpt = productRepository.findById(productId);
 
@@ -143,10 +195,6 @@ public class SalesService {
         return productOpt;
     }
     
-    /**
-     * Elimina un producto por ID.
-     * @param productId ID del producto a eliminar.
-     */
     public void deleteProduct(int productId) {
         productRepository.deleteById(productId);
     }

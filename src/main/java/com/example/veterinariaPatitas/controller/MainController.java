@@ -33,7 +33,7 @@ public class MainController {
     public String adoptar() {
         return "adoptar";
     }
-
+    
     @GetMapping("/envia_mensaje")
     public String enviarMensaje() {
         return "envia_mensaje";

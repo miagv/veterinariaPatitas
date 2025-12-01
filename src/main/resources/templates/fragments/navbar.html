@@ -42,21 +42,18 @@
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-user"></i> Usuario
                     </a>
+                    
 
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
 
+                    
                         <!-- LAS ÚNICAS GESTIONES QUE EXISTEN EN TU PROYECTO -->
                         <li>
-                            <a class="dropdown-item" th:href="@{/simulador_ventas}">
-                                <i class="fa-solid fa-shop"></i> Gestionar Ventas
+                            <a class="dropdown-item" th:href="@{/dashboard}">
+                                <i class="fa-solid fa-shop"></i> Dashboard
                             </a>
                         </li>
 
-                        <li>
-                            <a class="dropdown-item" th:href="@{/simulador_citas}">
-                                <i class="fa-solid fa-calendar-check"></i> Gestionar Citas
-                            </a>
-                        </li>
+                        
 
                         <li><hr class="dropdown-divider"></li>
 
