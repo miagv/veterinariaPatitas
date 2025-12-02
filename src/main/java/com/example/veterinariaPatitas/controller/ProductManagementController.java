@@ -50,13 +50,13 @@ public class ProductManagementController {
     
     /**
      * Endpoint para modificar completamente un producto (ej: precio o nombre). Solo TRABAJADOR.
-     * CORRECCIÓN: Usa salesService.getProductById(id) para evitar el error de acceso.
+     * 
      */
     @PreAuthorize("hasAuthority('TRABAJADOR')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable int id, @RequestBody Product productDetails) {
         
-        // CORREGIDO: Accedemos al producto a través del servicio
+        
         return salesService.getProductById(id)
             .map(existingProduct -> {
                 existingProduct.setName(productDetails.getName());

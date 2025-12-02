@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/medicos")
+@RequestMapping("/api/medicos")//responde a la ruta de api medicos
 public class MedicoController {
 
     private final MedicoService medicoService;
@@ -15,14 +15,14 @@ public class MedicoController {
         this.medicoService = medicoService;
     }
 
-    // ✅ Devuelve médicos disponibles según servicio, especialidad y hora
+    //  Devuelve médicos disponibles según servicio, especialidad y hora
     @GetMapping("/buscar")
     public List<Medico> getDisponibles(
             @RequestParam(required = false) Long servicioId,
             @RequestParam(required = false) String especialidad,
             @RequestParam(required = false) String hora
     ) {
-        // 1️⃣ Obtener lista base
+        // Obtener lista base
         List<Medico> medicos;
 
         if (servicioId != null)

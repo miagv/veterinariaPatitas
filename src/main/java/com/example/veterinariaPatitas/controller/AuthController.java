@@ -22,7 +22,7 @@ public class AuthController {
             Model model) {
 
        
-        // ---- USUARIO TRABAJADOR EJEMPLO ----
+        // ---- USUARIO TRABAJADOR  ----
         if (usuario.equals("trabajador") && contrasena.equals("123456") && rol.equals("TRABAJADOR")) {
             session.setAttribute("usuario", usuario);
             session.setAttribute("rol", rol);

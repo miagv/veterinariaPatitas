@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "sales") // O el nombre que prefieras para la tabla de transacciones
+@Table(name = "sales") // nombre de la bd
 public class Sale {
     
     @Id

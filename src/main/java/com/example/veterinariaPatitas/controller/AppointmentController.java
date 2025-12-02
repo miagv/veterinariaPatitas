@@ -22,7 +22,7 @@ public class AppointmentController {
 
     @Autowired
     public AppointmentController(AppointmentService appointmentService) {
-        this.appointmentService = appointmentService;
+        this.appointmentService = appointmentService;//inyeccion de dependencias de servicio
     }
 
     /**
@@ -76,7 +76,7 @@ public class AppointmentController {
 
             if (success) {
                 model.addAttribute("message", "¡Éxito! Su cita ha sido agendada con el servicio de " + appointmentService.getServiceById(serviceId).getName() + " para el " + appointmentDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")) + ".");
-                model.addAttribute("messageType", "success");
+                model.addAttribute("messageType", "success");//manda dato a la vista
             } else {
                 model.addAttribute("message", "Error: No se pudo agendar la cita. El servicio, médico, u horario podría no ser válido.");
                 model.addAttribute("messageType", "danger");
@@ -87,5 +87,5 @@ public class AppointmentController {
         return showAppointmentSimulator(model);
     }
     
-    // **NOTA: El método DELETE ha sido removido de aquí y movido a AppointmentManagementController.**
+    
 }

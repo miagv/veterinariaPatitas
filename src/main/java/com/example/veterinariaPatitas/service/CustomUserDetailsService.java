@@ -3,7 +3,7 @@ package com.example.veterinariaPatitas.service;
 import com.example.veterinariaPatitas.model.Usuario;
 import com.example.veterinariaPatitas.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;//roles
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +14,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
+//busca el usuario en la bd y lo convierte en un userdetails de spring security
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
+//verifica si el usuario existe o no y muestra un error 
         Usuario u = usuarioRepository.findByUsuario(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
-        // ✅ CRÍTICO: Construcción robusta de la colección de autoridades
-        // Asegura que solo se usa la cadena del rol de la base de datos ("TRABAJADOR")
+//convierte la cadena en un rol y guarda en una lista el usuario y cifra la contra
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(u.getRole()));
 
         return User.builder()

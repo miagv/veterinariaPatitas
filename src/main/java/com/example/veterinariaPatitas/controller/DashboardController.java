@@ -16,16 +16,16 @@ public class DashboardController {
 
     private final SalesService salesService;
     private final AppointmentService appointmentService;
-
+//inyeccion de dependencias
     @Autowired
     public DashboardController(SalesService salesService, AppointmentService appointmentService) {
         this.salesService = salesService;
         this.appointmentService = appointmentService;
     }
-
+//devuelve la ruta del dashboard
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
-
+//tranfroma los datos a json
         ObjectMapper mapper = new ObjectMapper();
 
         try {
@@ -33,7 +33,7 @@ public class DashboardController {
             Double totalVentasHoy = salesService.getTotalVentasHoy();
             if (totalVentasHoy == null) totalVentasHoy = 0.0;
             
-            // ⭐ NUEVO: Ingresos de Citas Hoy 
+            // Ingresos de Citas Hoy 
             Double ingresosCitasHoy = appointmentService.getIngresosCitasHoy();
             if (ingresosCitasHoy == null) ingresosCitasHoy = 0.0;
 
@@ -56,7 +56,7 @@ public class DashboardController {
             // --- Agregar al modelo ---
             model.addAttribute("totalVentasHoy", totalVentasHoy);
             model.addAttribute("citasPendientes", citasPendientes);
-            // ⭐ NUEVO: Agregar la métrica de ingresos de citas
+            // Agregar la métrica de ingresos de citas
             model.addAttribute("ingresosCitasHoy", ingresosCitasHoy); 
             model.addAttribute("ventasJson", ventasJson);
             model.addAttribute("citasJson", citasJson);
@@ -66,7 +66,7 @@ public class DashboardController {
             // Valores por defecto para evitar errores 500
             model.addAttribute("totalVentasHoy", 0.0);
             model.addAttribute("citasPendientes", 0L);
-            // ⭐ NUEVO: Valor por defecto
+            // Valor por defecto
             model.addAttribute("ingresosCitasHoy", 0.0);
             model.addAttribute("ventasJson", "{}");
             model.addAttribute("citasJson", "{}");

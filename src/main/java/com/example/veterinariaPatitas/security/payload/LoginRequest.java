@@ -1,5 +1,5 @@
 package com.example.veterinariaPatitas.security.payload;
-
+//manda en formato json la perticion login
 
 public class LoginRequest {
     private String username;

@@ -12,7 +12,7 @@ import jakarta.persistence.*;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//incrementador
     private int id;
 
     @Column(nullable = false, length = 100)

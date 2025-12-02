@@ -12,17 +12,17 @@ import java.util.List;
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
-    // 1. Obtener el total de ventas de un día (KPI) - CORRECTO
+    // 1. Obtener el total de ventas de un día (KPI)
     @Query("SELECT SUM(s.totalAmount) FROM Sale s WHERE s.saleDateTime BETWEEN :startOfDay AND :endOfDay")
     Double sumTotalByDate(
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
-    // 2. Obtener totales por mes (para gráfica) - 🛑 CORRECCIÓN DE SINTAXIS
+    // 2. Obtener totales por mes 
     @Query("SELECT YEAR(s.saleDateTime), MONTH(s.saleDateTime), SUM(s.totalAmount) " +
             "FROM Sale s " +
             "GROUP BY YEAR(s.saleDateTime), MONTH(s.saleDateTime) " +
             "ORDER BY YEAR(s.saleDateTime), MONTH(s.saleDateTime)")
-    List<Object[]> findTotalSalesPerMonth(); // ✅ Eliminamos FUNCTION()
+    List<Object[]> findTotalSalesPerMonth(); 
 }

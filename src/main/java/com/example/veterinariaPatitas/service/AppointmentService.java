@@ -5,13 +5,13 @@ import com.example.veterinariaPatitas.model.Medico;
 import com.example.veterinariaPatitas.model.ServiceVet;
 import com.example.veterinariaPatitas.repository.ServiceRepository;
 import com.example.veterinariaPatitas.repository.AppointmentRepository;
-import com.example.veterinariaPatitas.repository.MedicoRepository;
+import com.example.veterinariaPatitas.repository.MedicoRepository;//obtiene datos de la bd
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
-import java.time.LocalDateTime;
+import java.time.LocalDateTime;//fecha y hora
 import java.time.LocalTime;
 import java.util.LinkedHashMap; // Para mantener el orden de los meses
 import java.util.List;
@@ -29,32 +29,32 @@ public class AppointmentService {
     @Autowired
     private MedicoRepository medicoRepository;
 
-    // 🌟 1. Obtener lista de servicios disponibles
+    // 1. Obtener lista de servicios disponibles
     public List<ServiceVet> getAvailableServices() {
         return serviceRepository.findAll();
     }
 
-    // 🌟 2. Obtener lista de citas agendadas
+    //  2. Obtener lista de citas agendadas
     public List<Appointment> getBookedAppointments() {
         return appointmentRepository.findAll();
     }
 
-    // 🌟 3. Verificar disponibilidad de hora
+    //  3. Verificar disponibilidad de hora
     public boolean isAvailable(LocalDateTime dateTime) {
         return !appointmentRepository.existsByDateTime(dateTime);
     }
 
-    // 🌟 4. Agendar cita (con servicio y médico)
+    //  4. Agendar cita (con servicio y médico)
     public boolean bookAppointment(int serviceId, Long medicoId, LocalDateTime appointmentDateTime, String clientName) {
-        // 1️⃣ Buscar servicio
+        // 1️ Buscar servicio
         ServiceVet service = serviceRepository.findById(serviceId).orElse(null);
         if (service == null) return false;
 
-        // 2️⃣ Buscar médico
+        // 2️ Buscar médico
         Medico medico = medicoRepository.findById(medicoId).orElse(null);
         if (medico == null) return false;
 
-        // 3️⃣ Validar si la hora de la cita está dentro del horario del médico
+        // 3️ Validar si la hora de la cita está dentro del horario del médico
         LocalTime inicio = medico.getHorarioInicio();
         LocalTime fin = medico.getHorarioFin();
         LocalTime horaCita = appointmentDateTime.toLocalTime();
@@ -64,13 +64,13 @@ public class AppointmentService {
             return false;
         }
 
-        // 4️⃣ Verificar disponibilidad
+        // 4️ Verificar disponibilidad
         if (!isAvailable(appointmentDateTime)) {
             System.out.println("⛔ La hora ya está ocupada.");
             return false;
         }
 
-        // 5️⃣ Crear nueva cita
+        // 5️ Crear nueva cita
         Appointment appointment = new Appointment(service, appointmentDateTime, clientName);
         appointment.setMedico(medico);
         appointmentRepository.save(appointment);
@@ -79,30 +79,30 @@ public class AppointmentService {
         return true;
     }
 
-    // 🌟 5. Obtener servicio por ID
+    //  5. Obtener servicio por ID
     public ServiceVet getServiceById(int serviceId) {
         return serviceRepository.findById(serviceId).orElse(null);
     }
 
-    // 🌟 6. Obtener todos los médicos
+    //  6. Obtener todos los médicos
     public List<Medico> getAllMedicos() {
         return medicoRepository.findAll();
     }
 
-    // 🌟 7. Obtener cita por ID (Usado por los Controllers)
+    //  7. Obtener cita por ID (Usado por los Controllers)
     public Optional<Appointment> findById(Long id) {
         return appointmentRepository.findById(id);
     }
     
-// --- MÉTODOS DASHBOARD IMPLEMENTADOS ---
+// dashboard
 
-    // 🌟 8. Cuenta el número de citas que están pendientes (futuras)
+    // 8. Cuenta el número de citas que están pendientes (futuras)
     public Long contarCitasPendientes() {
         // Usa el método del repositorio con la fecha y hora actual
         return appointmentRepository.countByDateTimeAfter(LocalDateTime.now());
     }
 
-    // 🌟 9. Devuelve un mapa de la cantidad de citas por mes para los gráficos.
+    // 9. Devuelve un mapa de la cantidad de citas por mes para los gráficos.
     public Map<String, Long> getCitasPorMes() {
         // Llama a la consulta compleja del repositorio
         List<Object[]> monthlyCitasData = appointmentRepository.countAppointmentsPerMonth();
@@ -110,7 +110,7 @@ public class AppointmentService {
         
         // Procesar los resultados (se espera [año, mes, total])
         for (Object[] row : monthlyCitasData) {
-            Integer monthIndex = (Integer) row[1]; // El mes (ej: 11 para Noviembre)
+            Integer monthIndex = (Integer) row[1]; //mes
             Long total = (Long) row[2];          // El conteo de citas
             
             // Convertir el índice numérico del mes a su nombre abreviado

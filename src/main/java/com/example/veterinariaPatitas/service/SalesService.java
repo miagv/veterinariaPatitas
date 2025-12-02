@@ -33,15 +33,15 @@ public class SalesService {
     @Autowired
     private SaleRepository saleRepository; // Repositorio de Ventas inyectado
 
-    
+    //lista de productos inicial
     public List<Product> getInitialProducts() {
         return productRepository.findAll();
     }
 
-    
+    //calcula totales 
     public void calculateTotals(List<Product> cart, Model model) {
         double subtotal = cart.stream()
-                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())//saca el precio por cantidad
                 .sum();
         double tax = subtotal * IGV_RATE;
         double total = subtotal + tax;
@@ -51,10 +51,10 @@ public class SalesService {
         model.addAttribute("total", total);
     }
 
-    
+    //añade al carrito, verifica que el producto exista y que haya stock por el id
     public String addProductToCart(int productId, int quantity, List<Product> cart) {
         Optional<Product> productOpt = productRepository.findById(productId);
-
+//hace la verficacion sino manda error
         if (productOpt.isEmpty()) {
             return "Error: Producto no encontrado.";
         }
@@ -65,7 +65,7 @@ public class SalesService {
             return "Error: Cantidad inválida o stock insuficiente.";
         }
 
-        
+      //si el producto esta en el carrito, lo actualiza y lo suma   
         Optional<Product> existingItemOpt = cart.stream()
                 .filter(item -> item.getId() == productId)
                 .findFirst();
@@ -73,11 +73,11 @@ public class SalesService {
         if (existingItemOpt.isPresent()) {
             Product existingItem = existingItemOpt.get();
             int newTotalQty = existingItem.getQuantity() + quantity;
-
+//verifica que no exceda el stock
             if (newTotalQty > product.getStock()) {
                 return "Error: La cantidad total excede el stock disponible.";
             }
-
+//acutliza la cantidad y si no hay crea uno nuevo
             existingItem.setQuantity(newTotalQty);
         } else {
             Product newItem = new Product(
@@ -94,9 +94,9 @@ public class SalesService {
         return "Producto agregado al carrito con éxito.";
     }
 
-    
+    //finaliza la venta
     public List<Product> finalizeSale(List<Product> cart) {
-
+//busca el producto y descuenta el stock
         for (Product cartItem : cart) {
             Optional<Product> productOpt = productRepository.findById(cartItem.getId());
 
@@ -114,9 +114,7 @@ public class SalesService {
         double tax = subtotal * IGV_RATE;
         double total = subtotal + tax; 
         
-        // -----------------------------------------------------------
-        // === REGISTRAR LA TRANSACCIÓN DE VENTA FINALIZADA ===
-        // -----------------------------------------------------------
+        // se registra la venta realizada
         Sale newSale = new Sale(total, LocalDateTime.now()); 
         saleRepository.save(newSale); 
         // -----------------------------------------------------------
@@ -125,9 +123,7 @@ public class SalesService {
         return new ArrayList<>(cart);
     }
     
-    // =======================================================
-    // === MÉTODOS DEL DASHBOARD ===
-    // =======================================================
+    // metodo para el dashboard
 
     /**
      * Calcula y devuelve el total de dinero vendido en el día actual usando SaleRepository.
@@ -148,7 +144,7 @@ public class SalesService {
         Map<String, Double> data = new LinkedHashMap<>();
         
         for (Object[] row : monthlySalesData) {
-            // Se asume el orden [año (Integer), mes (Integer), total (Double)]
+            // Se asume el orden
             Integer monthIndex = (Integer) row[1]; 
             Double total = (Double) row[2];
             String monthName = getMonthName(monthIndex); 
@@ -169,18 +165,16 @@ public class SalesService {
         return "N/A";
     }
 
-    // =======================================================
-    // === MÉTODOS DE GESTIÓN (existentes) ===
-    // =======================================================
+    // obtiene el producto por id 
 
     public Optional<Product> getProductById(int id) {
         return productRepository.findById(id);
     }
-
+//guarda el producto en el repositorio
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }
-
+//añade stock al producto
     public Optional<Product> addStock(int productId, int addedStock) {
         Optional<Product> productOpt = productRepository.findById(productId);
 
@@ -194,7 +188,7 @@ public class SalesService {
         
         return productOpt;
     }
-    
+    //si en un futuro se quiere eliminar
     public void deleteProduct(int productId) {
         productRepository.deleteById(productId);
     }

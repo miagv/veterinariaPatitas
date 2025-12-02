@@ -1,5 +1,5 @@
 package com.example.veterinariaPatitas.security.payload;
-
+//manda en formato json lo que recibe en el registro
 public class RegisterRequest {
     private String username;
     private String password;

@@ -30,7 +30,7 @@
             <p class="lead text-secondary mt-2">Disponibilidad de Servicios Veterinarios</p>
         </header>
 
-        <!-- Notificación -->
+        <!-- Muestra un mensaje de fallo o de exito si el controlador solicita un mensaje-->
         <div th:if="${message}" id="notification"
              th:classappend="|alert-${messageType}|"
              class="alert mx-auto mb-4" role="alert">
@@ -44,7 +44,7 @@
                 <h2 class="h5 fw-bold mb-4 text-secondary">
                     <i class="fa-solid fa-calendar-check me-2 text-patitas"></i>Solicitar una Cita
                 </h2>
-
+                  <!-- define donde se enviaran los datos cuando se presione el boton agendar cita -->
                 <form th:action="@{/book_appointment}" method="post"
                       class="p-4 border rounded-3 shadow-sm">
 
@@ -55,7 +55,7 @@
                                name="clientName" required>
                     </div>
 
-                    <!-- Servicio -->
+                    <!-- verifica que el servicio este habilitado y muestra el valor por el id -->
                     <div class="mb-3">
                         <label for="serviceId" class="form-label fw-semibold">Servicio Requerido</label>
                         <select id="serviceId" name="serviceId" class="form-select" required>
@@ -67,7 +67,7 @@
                         </select>
                     </div>
 
-                    <!-- Médico -->
+                    <!-- muestra la lista de medicos disponibles y las validaciones, extrae estos datos -->
                     <div class="mb-3">
                         <label for="medicoId" class="form-label fw-semibold">Médico</label>
                         <select id="medicoId" name="medicoId" class="form-select" required>
@@ -118,7 +118,7 @@
                 <h2 class="h5 fw-bold mb-4 text-secondary">
                     <i class="fa-solid fa-calendar-alt me-2 text-warning"></i>Citas Ocupadas
                 </h2>
-
+<!-- muestra la lista de las citas que se encuentran agendadas -->
                 <div th:if="${#lists.isEmpty(bookedAppointments)}"
                      class="alert alert-info text-center">
                     No hay citas agendadas aún.
@@ -157,14 +157,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
 
-<!-- SCRIPT CORREGIDO -->
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const serviceSelect = document.getElementById('serviceId');
     const timeSelect = document.getElementById('time');
     const medicoSelect = document.getElementById('medicoId');
 
-    // Guardamos todas las opciones originales
+    // crea una copia de las opciones de medicos
     const originalOptions = Array.from(medicoSelect.options).map(o => ({
         value: o.value,
         text: o.text,
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // EVENTOS CORREGIDOS (FALTABAN)
+    // muestra la lista de medicos disponibles segun los cambios
     serviceSelect.addEventListener('change', filterMedicos);
     timeSelect.addEventListener('change', filterMedicos);
 });

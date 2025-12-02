@@ -6,25 +6,25 @@ import com.example.veterinariaPatitas.model.ServiceVet;
 import com.example.veterinariaPatitas.repository.MedicoRepository;
 import com.example.veterinariaPatitas.repository.ProductRepository;
 import com.example.veterinariaPatitas.repository.ServiceVetRepository;
-import org.slf4j.Logger;
+import org.slf4j.Logger; //registrar mensajes en consola
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.time.LocalTime;
 
-@Configuration
+@Configuration //una fuente de definicion de beans
 public class DataInitializer {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
-
+     //inicializa para poder mostrar los datos 
     @Bean
-    CommandLineRunner initDatabase(
+    CommandLineRunner initDatabase(//define que el bean sera usado cuando la aplicacion inicie
         ServiceVetRepository serviceRepo,
         MedicoRepository medicoRepo,
         ProductRepository productRepo) {
         return args -> {
-            // Crear servicios (si no existen ya) -> evita duplicados entre data.sql y DataInitializer
+            // Crear servicios (si no existen ya y evita duplicados)
             ServiceVet consultaGeneral = serviceRepo.findAll().stream()
                     .filter(s -> "Consulta General".equals(s.getName()))
                     .findFirst()
@@ -219,9 +219,9 @@ public class DataInitializer {
                 p6.setUnit("Lata 400g");
                 productRepo.save(p6);
 
-                log.info("Seeded default products into productos table (6 items)");
+                log.info("Seeded default products into productos table (6 items)");//mensaje de exito en la consola
             } else {
-                log.info("Skipped seeding products because table is not empty");
+                log.info("Skipped seeding products because table is not empty");//error
             }
         };
     }

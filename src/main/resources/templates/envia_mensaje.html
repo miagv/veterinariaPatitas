@@ -60,7 +60,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+                    <form id="contactoForm" th:action="@{/upload}" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre Completo:</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" required>
@@ -71,7 +71,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="telefono" class="form-label">Número de Teléfono (opcional):</label>
-                            <input type="tel" class="form-control" id="telefono" name="telefono">
+                            <input type="tel" class="form-control" id="telefono" name="telefono"
+                                   maxlength="9" 
+                                   pattern="[0-9]{9}" 
+                                   title="El número de teléfono debe tener exactamente 9 dígitos."
+                                   placeholder="Ej: 987654321">
                         </div>
                         <div class="mb-3">
                             <label for="tipo_mensaje" class="form-label">Tipo de Mensaje:</label>
@@ -94,6 +98,7 @@
                         <div class="mb-3">
                             <label for="mensaje" class="form-label">Mensaje:</label>
                             <textarea class="form-control" id="mensaje" name="mensaje" rows="4" required></textarea>
+                            <small id="wordCount" class="form-text text-muted">0 / 200 palabras.</small>
                         </div>
                         <div class="mb-3">
                             <label for="pdfFile" class="form-label">Subir PDF (opcional):</label>
@@ -111,9 +116,86 @@
     <footer>
         <p>&copy; 2025 Veterinaria PATITAS. Todos los derechos reservados.</p>
     </footer>
+    
     <script th:src="@{/js/navbar_logic.js}"></script>
     <script th:src="@{/js/animacion.js}"></script>
     <script th:src="@{/js/script.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('contactoForm');
+            const telefonoInput = document.getElementById('telefono');
+            const mensajeTextarea = document.getElementById('mensaje');
+            const wordCountSpan = document.getElementById('wordCount');
+            const maxWords = 200;
+            
+            // --- Lógica de Teléfono (Restricción de Dígitos en Tiempo Real) ---
+            if (telefonoInput) {
+                telefonoInput.addEventListener('input', function() {
+                    // Asegura que solo se puedan ingresar números y limita a 9 dígitos
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length > 9) {
+                        this.value = this.value.slice(0, 9);
+                    }
+                });
+            }
+
+            // --- Lógica de Mensaje (Contador de palabras en Tiempo Real) ---
+            if (mensajeTextarea && wordCountSpan) {
+                mensajeTextarea.addEventListener('input', function() {
+                    const text = this.value.trim();
+                    // Divide el texto por espacios en blanco para obtener las palabras
+                    const words = text ? text.split(/\s+/).filter(word => word.length > 0) : [];
+                    let currentWordCount = words.length;
+
+                    wordCountSpan.textContent = `${currentWordCount} / ${maxWords} palabras.`;
+
+                    if (currentWordCount > maxWords) {
+                        // Si se excede el límite, corta el texto a las 200 palabras
+                        const validText = words.slice(0, maxWords).join(' ');
+                        this.value = validText;
+                        currentWordCount = maxWords; // Actualiza el conteo visual
+                        wordCountSpan.textContent = `${currentWordCount} / ${maxWords} palabras.`;
+                        wordCountSpan.style.color = 'red';
+                    } else {
+                        wordCountSpan.style.color = 'inherit';
+                    }
+                });
+            }
+
+            // --- Lógica de Bloqueo de Envío (Doble chequeo del Frontend) ---
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    
+                    let isValid = true;
+                    
+                    // 1. Revalidación del Límite de Palabras
+                    const text = mensajeTextarea.value.trim();
+                    const words = text ? text.split(/\s+/).filter(word => word.length > 0) : [];
+                    const currentWordCount = words.length;
+
+                    if (currentWordCount > maxWords) {
+                        isValid = false;
+                        alert(`Error de validación: El mensaje excede el límite de ${maxWords} palabras.`);
+                        mensajeTextarea.focus();
+                    }
+
+                    // 2. Revalidación de Teléfono (Longitud exacta de 9, solo si se ingresó)
+                    const telefonoValue = telefonoInput.value.trim();
+                    if (telefonoValue.length > 0 && telefonoValue.length !== 9) {
+                        isValid = false;
+                        alert('Error de validación: El número de teléfono debe tener 9 dígitos.');
+                        telefonoInput.focus();
+                    }
+
+                    // Si alguna validación falló en JS, previene el envío
+                    if (!isValid) {
+                        e.preventDefault(); 
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

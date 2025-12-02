@@ -1,43 +1,43 @@
 package com.example.veterinariaPatitas.config;
 
-import com.example.veterinariaPatitas.security.JwtFilter;
+import com.example.veterinariaPatitas.security.JwtFilter;//filtro para proteger las rutas api
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationManager;//proceso de autenticacion
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;//encriptador de contraseñas
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity//habilita la seguridad con anotaciones
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    // Asumimos que JwtFilter también ha sido corregido para no añadir "ROLE_"
+    // inyeccion del filtro jwt
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+//regula la cadena de filtros de http
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())//desahibilita para rutas rest
 
-                // 1. ✅ CRÍTICO: Política de sesión para Thymeleaf
+                
                 .sessionManagement(sess ->
-                        sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) 
+                        sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) //gestion de sesiones
                 )
 
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth//incializa autorization de rutas
 
-                        // 2. ✅ CRÍTICO: Permite todos los estáticos y rutas públicas (¡Arregla el menú desarmado!)
+                        // permite acceso publico a estas rutas 
                         .requestMatchers(
                                 "/", "/login", "/logout",
                                 "/css/**", "/js/**", "/img/**", "/favicon.ico",
@@ -47,28 +47,28 @@ public class SecurityConfig {
                                 "/simulador_ventas", "/api/auth/login", "/api/auth/register"
                         ).permitAll()
 
-                        // 3. ✅ CRÍTICO: Regla de acceso sin el prefijo ROLE_
+                        // rutas protegida solo para el trabajador
                         .requestMatchers("/dashboard")
                         .hasAuthority("TRABAJADOR") // Debe coincidir con CustomUserDetailsService
 
-                        // Rutas API protegidas
+                        // Rutas API protegidas con jwt
                         .requestMatchers("/api/**")
                         .authenticated()
 
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll()//cualquier otra ruta es permitida
                 )
                 
-                // 4. ✅ CRÍTICO: Configuración del Form Login para manejar el POST /login
-                .formLogin(form -> form
+                
+                .formLogin(form -> form //formulario que define el login y valida las credenciales para el acceso por spring security
                     .loginPage("/login")
-                    .loginProcessingUrl("/login") // URL donde se envían los datos del formulario
-                    .usernameParameter("usuario") // Nombre del campo 'username' en tu login.html
-                    .passwordParameter("contrasena") // Nombre del campo 'password' en tu login.html
-                    .defaultSuccessUrl("/dashboard", true) // Redirección exitosa
+                    .loginProcessingUrl("/login") 
+                    .usernameParameter("usuario") 
+                    .passwordParameter("contrasena") 
+                    .defaultSuccessUrl("/dashboard", true) 
                     .permitAll()
                 )
                 
-                // Configuración de Logout
+                // cierre de sesion valida y elimina cookies
                 .logout(logout -> logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/login?logout=true")
@@ -82,13 +82,13 @@ public class SecurityConfig {
         return http.build();
     }
     
-    // Configuración de Beans para autenticación y encriptación
+    // define el bean para la autencicacion
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
     }
-
+    //define el bean para el cifrado de contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

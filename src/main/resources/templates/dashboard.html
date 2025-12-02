@@ -47,7 +47,7 @@
                     <div class="card-body">
                         <i class="fas fa-dollar-sign"></i> Ventas Totales Hoy
                         <div class="h5 mb-0 font-weight-bold text-white mt-2">
-                            $ <span th:text="${#numbers.formatDecimal(totalVentasHoy, 1, 'COMMA', 2, 'POINT')}">238.95</span>
+                            S/ <span th:text="${#numbers.formatDecimal(totalVentasHoy, 1, 'COMMA', 2, 'POINT')}">238.95</span>
                         </div>
                         <p class="text-white-50 small mt-1">Monto total de transacciones registradas hoy.</p>
                     </div>
@@ -65,7 +65,7 @@
                     </div>
                 </div>
             </div>
-
+<!-- trae los datos del controlador-->
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card bg-info text-white shadow">
                     <div class="card-body">
@@ -120,23 +120,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script th:inline="javascript">
-        /*<![CDATA[*/
-        // Corrección de sintaxis de Thymeleaf para evitar errores de IDE
         
-        // Datos de Ventas
+        
+        // Datos de Ventas se pasa en Json desde el controlador
         var ventasData = JSON.parse(/*[[${ventasJson}]]*/ '{}'); 
         var ventasLabels = Object.keys(ventasData);
         var ventasValues = Object.values(ventasData);
 
-        // Datos de Citas
+        // Datos de Citas Json para evitar el error
         var citasData = JSON.parse(/*[[${citasJson}]]*/ '{}'); 
         var citasLabels = Object.keys(citasData);
         var citasValues = Object.values(citasData);
 
-        // ----------------- Configuración del Gráfico de Ventas -----------------
+        // Grafico
+        //informacion del graficos de ventas filtra ventasChart insertando en el canvas
         var ventasCtx = document.getElementById('ventasChart').getContext('2d');
         var ventasChart = new Chart(ventasCtx, {
-            type: 'line',
+            type: 'line',//tipo linea
             data: {
                 labels: ventasLabels,
                 datasets: [{
@@ -158,7 +158,7 @@
             }
         });
 
-        // ----------------- Configuración del Gráfico de Citas -----------------
+        // grafico de citas
         var citasCtx = document.getElementById('citasChart').getContext('2d');
         var citasChart = new Chart(citasCtx, {
             type: 'bar',

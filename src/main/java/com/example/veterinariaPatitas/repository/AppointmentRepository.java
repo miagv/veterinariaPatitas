@@ -15,12 +15,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // 2. Contar citas pendientes (citas futuras)
     Long countByDateTimeAfter(LocalDateTime dateTime); 
 
-    // 3. Obtener datos por mes para el gráfico (CORRECCIÓN CRÍTICA DE JPQL)
+    // 3. Obtener datos por mes para el gráfico 
     /**
      * Devuelve la cantidad de citas por mes.
      * Resultado: Lista de arrays con [año, mes, total_citas]
      */
-    @Query("SELECT YEAR(a.dateTime), MONTH(a.dateTime), COUNT(a) " + // 💡 Se eliminó FUNCTION()
+    @Query("SELECT YEAR(a.dateTime), MONTH(a.dateTime), COUNT(a) " + 
            "FROM Appointment a " +
            "GROUP BY YEAR(a.dateTime), MONTH(a.dateTime) " + 
            "ORDER BY YEAR(a.dateTime) ASC, MONTH(a.dateTime) ASC")

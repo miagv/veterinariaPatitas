@@ -5,7 +5,7 @@ import com.example.veterinariaPatitas.service.SalesService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.bind.support.SessionStatus;//para manejar estado de sesion
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class SalesController {
     }
 
     /**
-     * carrito vacio
+     * incia con el carrito vacio
      */
     @ModelAttribute("cart")
     public List<Product> initializeCart() {
@@ -42,13 +42,11 @@ public class SalesController {
     }
 
     /**
-     * pagina simulador
+     * carga la pagina princiapl de ventas
      */
     @GetMapping("/simulador_ventas")
     public String simuladorVentas(@ModelAttribute("cart") List<Product> cart, Model model) {
-        // If totals were provided as flash attributes (after a redirect from finalizeSale),
-        // don't overwrite them here. This preserves the subtotal/tax/total that belong to the
-        // finalCart shown after a sale.
+        // calcila los totales si no estan calculados 
         if (!model.containsAttribute("subtotal")) {
             salesService.calculateTotals(cart, model);
         }
@@ -64,8 +62,7 @@ public class SalesController {
                             @ModelAttribute("cart") List<Product> cart,
                             Model model) {
 
-        // CORREGIDO (Línea 62): Solo se pasan 3 argumentos (productId, quantity, cart). 
-        // Se eliminó la lista 'products' extra.
+        // se agrega el producto teniendo en cuenta el stock por los datos del productp
         String message = salesService.addProductToCart(productId, quantity, cart); 
         model.addAttribute("message", message);
 
@@ -80,17 +77,17 @@ public class SalesController {
                                  @ModelAttribute("cart") List<Product> cart,
                                  Model model) {
 
-        cart.removeIf(item -> item.getId() == productId);
+        cart.removeIf(item -> item.getId() == productId);//verifica si el producto existe y lo elimina sino muestra error
         model.addAttribute("message", "Producto eliminado del carrito.");
         return "redirect:/simulador_ventas";
     }
 
     /**
-     * vacio
+     * vaciar
      */
     @PostMapping("/clear_cart")
     public String clearCart(@ModelAttribute("cart") List<Product> cart, Model model) {
-        cart.clear();
+        cart.clear();//se obtiene la lista del carrito y se limpia
         model.addAttribute("message", "El carrito ha sido vaciado.");
         return "redirect:/simulador_ventas";
     }
@@ -103,18 +100,17 @@ public class SalesController {
                                @ModelAttribute("cart") List<Product> cart,
                                SessionStatus status, Model model,
                                RedirectAttributes redirectAttributes) {
-
+//verifica que el carrito no este vacio, sino muestra un error y manda ese dato a la vista
         log.info("/finalize_sale called; cart size before finalize: {}", cart == null ? 0 : cart.size());
 
         if (cart == null || cart.isEmpty()) {
             log.warn("finalize_sale: carrito vacío, redirigiendo");
-            model.addAttribute("message", "Error: El carrito está vacío.");
+            model.addAttribute("message", "Error: El carrito está vacío.");//manda el dato a la vista
             return "redirect:/simulador_ventas";
         }
 
-        // descuenta del stock
-        // CORREGIDO (Línea 106): Solo se pasa 1 argumento ('cart'). 
-        // Se eliminó la lista 'products' extra.
+        // descuenta del stock del producto y obtiene el carrito final
+        
     List<Product> finalCart = salesService.finalizeSale(cart);
     log.info("finalize_sale: finalCart size after finalizeSale: {}", finalCart == null ? 0 : finalCart.size());
 
@@ -128,12 +124,12 @@ public class SalesController {
         double tax = subtotal * 0.18; // IGV 18%
         double total = subtotal + tax;
 
-        // También podemos setear en el model para la petición actual, pero necesitamos que sobreviva al redirect,
-        // así que los añadimos como flash attributes más abajo.
+        
+        // tiene que pasar el redirect, así que los añadimos como flash attributes más abajo.
         salesService.calculateTotals(finalCart, model);
 
-    // Crear una representación segura (DTO) del carrito para pasar al template y evitar problemas
-    // con entidades JPA o serialización en la vista.
+    // Crear una representación segura (DTO) del carrito para pasar al template 
+    // una lista segura con los datos necesarios para pasar a la vista
     List<java.util.Map<String, Object>> finalCartSafe = new java.util.ArrayList<>();
     if (finalCart != null) {
         for (Product p : finalCart) {
@@ -146,9 +142,9 @@ public class SalesController {
         }
     }
 
-    // Agregar la representación segura como flash attribute
+    // aflash attibuter para la vista, la copia segura del carrito
     redirectAttributes.addFlashAttribute("finalCart", finalCartSafe);
-    // Agregar también los totales para que la vista muestre las cifras correctas después del redirect
+    
     redirectAttributes.addFlashAttribute("subtotal", subtotal);
     redirectAttributes.addFlashAttribute("tax", tax);
     redirectAttributes.addFlashAttribute("total", total);

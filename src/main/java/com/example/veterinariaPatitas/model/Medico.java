@@ -14,20 +14,20 @@ public class Medico {
     private String nombre;
     private String especialidad;
 
-    // 🕐 Campos para los horarios
+    // Campos para los horarios
     private LocalTime horarioInicio;
     private LocalTime horarioFin;
 
-    // 🔹 Relación con el servicio
+    // Relación con el servicio
     @ManyToOne
     @JoinColumn(name = "servicio_id")
     private ServiceVet servicio;
 
-    // 🔹 Constructor vacío (obligatorio para JPA)
+    //  Constructor vacío (obligatorio para JPA)
     public Medico() {
     }
 
-    // 🔹 Constructor con parámetros
+    //  Constructor con parámetros
     public Medico(String nombre, String especialidad, LocalTime horarioInicio, LocalTime horarioFin) {
         this.nombre = nombre;
         this.especialidad = especialidad;
@@ -35,7 +35,7 @@ public class Medico {
         this.horarioFin = horarioFin;
     }
 
-    // 🔹 Getters y Setters
+    //  Getters y Setters
     public Long getId() {
         return id;
     }

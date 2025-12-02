@@ -9,9 +9,9 @@ import java.time.LocalTime;
 @Entity
 public class HorarioMedico {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//incrementable
     private Long id;
-    
+    //relacion con medico por id
     @ManyToOne
     @JoinColumn(name = "medico_id")
     private Medico medico;

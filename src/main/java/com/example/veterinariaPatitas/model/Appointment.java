@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 public class Appointment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//auto incrementable
     private Long id;
 
-    // ¡CORREGIDO! Usando ServiceVet como tipo
+    //relacion muchos a uno con servicio por el id
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "servicio_id", nullable = false)
     private ServiceVet service;
@@ -21,7 +21,7 @@ public class Appointment {
 
     @Column(nullable = false, length = 100)
     private String clientName;
-
+ //relacion muchos a uno con medico por id
     @ManyToOne
     @JoinColumn(name = "medico_id")
     private Medico medico;

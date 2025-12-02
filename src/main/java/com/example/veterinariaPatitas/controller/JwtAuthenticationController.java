@@ -2,22 +2,22 @@ package com.example.veterinariaPatitas.controller;
 
 import com.example.veterinariaPatitas.model.Usuario;
 import com.example.veterinariaPatitas.repository.UsuarioRepository;
-import com.example.veterinariaPatitas.security.JwtUtil;
-import com.example.veterinariaPatitas.security.payload.LoginRequest; 
-import com.example.veterinariaPatitas.security.payload.RegisterRequest; // NUEVO
+import com.example.veterinariaPatitas.security.JwtUtil;//importa la utilidad de jwt
+import com.example.veterinariaPatitas.security.payload.LoginRequest; //modela la peticion Json de login
+import com.example.veterinariaPatitas.security.payload.RegisterRequest; // modela la peticion Json de registro
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity;//respuesta http personalizada
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder; // NUEVO
+import org.springframework.security.crypto.password.PasswordEncoder; // encriptador de contraseñas
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.Map;//contruir las respuestas json
+import java.util.Optional;//resultado de busqueda en la bd
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth")//URl base para autenticacion
 public class JwtAuthenticationController {
 
     @Autowired
@@ -32,10 +32,8 @@ public class JwtAuthenticationController {
     @Autowired 
     private PasswordEncoder passwordEncoder; // NUEVO
 
-    // =======================================================
-    // MÉTODO DE LOGIN (Se mantiene igual, maneja CLIENTE y TRABAJADOR)
-    // =======================================================
-    @PostMapping("/login")
+
+    @PostMapping("/login")//mapea solicitudes post de login
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         
         try {
@@ -49,7 +47,7 @@ public class JwtAuthenticationController {
 
             // Si es exitoso, busca el rol
             Optional<Usuario> userOptional = usuarioRepository.findByUsuario(loginRequest.getUsername());
-            String role = userOptional.isPresent() ? userOptional.get().getRole() : "USER";
+            String role = userOptional.isPresent() ? userOptional.get().getRole() : "USER";//valor por defecto sino lo encuentra
 
             // Genera y devuelve el token JWT
             String jwt = jwtUtil.generateToken(loginRequest.getUsername(), role);
@@ -65,12 +63,10 @@ public class JwtAuthenticationController {
         }
     }
     
-    // =======================================================
-    // NUEVO ENDPOINT DE REGISTRO (Solo para CLIENTES)
-    // =======================================================
-    @PostMapping("/register")
+    
+    @PostMapping("/register")//mapea las solicitudes post de registro
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
-        
+        //valida que no exista el usuario
         if (usuarioRepository.existsByUsuario(registerRequest.getUsername())) {
             return ResponseEntity
                     .badRequest()
@@ -85,7 +81,7 @@ public class JwtAuthenticationController {
         
         usuarioRepository.save(nuevoUsuario);
         
-        // Logea automáticamente al cliente recién registrado
+        // Logea automáticamente al cliente recién registrado y le genera un jwt
         String jwt = jwtUtil.generateToken(nuevoUsuario.getUsuario(), nuevoUsuario.getRole());
         
         return ResponseEntity.ok(Map.of(
