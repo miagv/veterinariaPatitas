@@ -1,0 +1,11 @@
+target/
+.git/
+.gitignore
+uploads/
+.idea/
+*.iml
+.mvn/
+mvnw
+mvnw.cmd
+.vscode/
+.DS_Store
