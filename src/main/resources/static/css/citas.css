@@ -1,25 +1,57 @@
-      /* Estilos personalizados para el tema veterinario */
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
-        .bg-patitas { background-color: #00bfae; } /* Color primario similar al teal */
-        .text-patitas { color: #00bfae; }
-        .btn-patitas { 
-            background-color: #00bfae; 
-            border-color: #00bfae;
-            color: white;
-            transition: background-color 0.15s ease-in-out;
-        }
-        .btn-patitas:hover {
-            background-color: #00a092;
-            border-color: #00a092;
-            color: white;
-        }
-        /* Estilo para el contenedor principal, añadiendo una sombra suave */
-        .main-content-box {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
-        }
-        /* Color para citas ya agendadas */
-        .booked-item {
-            border-left: 5px solid #ffc107; /* Amarillo para indicar 'ocupado' */
-        }
+/* ===== Simulador de citas ===== */
+.form-panel {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.75rem;
+}
+
+.booked-item {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.15rem;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.booked-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.booked-item .fecha-badge {
+    background-color: var(--teal);
+    color: #fff;
+    border-radius: var(--radius-pill);
+    padding: 0.35rem 0.8rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.booked-item .hora-badge {
+    background-color: var(--accent);
+    color: #04312d;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background-color: var(--accent-soft);
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
+    color: var(--teal-dark);
+    font-weight: 600;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: block;
+}

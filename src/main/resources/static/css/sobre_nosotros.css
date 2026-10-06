@@ -1,51 +1,128 @@
+/* ===== Sobre nosotros ===== */
 .sobre-nosotros-container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #fff;   /* fondo blanco */
-    border-radius: 12px;      /* bordes redondeados */
-    box-shadow: 0 0 30px rgba(0,0,0,0.1); /* sombra suave */
-}
-.sobre-nosotros {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px 20px;
+    margin: 2rem auto;
+    padding: 2.5rem 2rem;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
 }
 
-.sobre-nosotros-box {
-    padding: 30px;
-    max-width: 900px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+.sobre-nosotros-intro {
+    max-width: 850px;
+    margin: 0 auto 2.5rem;
     text-align: center;
-    background-color: white;
-    border-radius: 1rem; /* rounded-4 de Bootstrap */
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1); /* Sombra suave */
 }
+
+.sobre-nosotros-intro h1 {
+    color: var(--teal);
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+}
+
+.sobre-nosotros-intro .lead {
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
 .card.team-hover {
-    transition: transform 0.5s cubic-bezier(0.4, 2, 0.6, 1), box-shadow 0.5s;
+    background: linear-gradient(160deg, var(--accent-soft) 0%, #ffffff 70%);
+    border: 1px solid rgba(0, 191, 174, 0.25);
+    border-radius: var(--radius);
+    text-align: center;
+    overflow: hidden;
+    transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .card.team-hover:hover {
-    transform: scale(1.09);
-    box-shadow: 0 8px 32px rgba(0, 128, 128, 0.22);
-    z-index: 2;
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-teal);
 }
 
 .team-img {
-    transition: box-shadow 0.3s;
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #fff;
+    box-shadow: var(--shadow-md);
+    margin: 1.5rem auto 0;
+    display: block;
+    transition: box-shadow var(--transition);
 }
 
 .card.team-hover:hover .team-img {
-    box-shadow: 0 12px 48px 0 rgba(0, 128, 128, 0.35), 0 2px 12px 0 rgba(0, 0, 0, 0.13);
+    box-shadow: var(--shadow-teal);
 }
 
-.container-custom {
+.card.team-hover .card-title {
+    color: var(--teal);
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.card.team-hover .especialidad {
+    color: var(--accent-hover);
+    font-weight: 800;
+    font-size: 0.92rem;
+}
+
+.card.team-hover .card-text {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ===== Tabla de horarios ===== */
+.horarios-section {
     max-width: 1100px;
-    margin: 30px auto 40px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 16px;
-    box-shadow: 0 0 24px rgba(0, 128, 128, 0.10);
+    margin: 0 auto 2.5rem;
+}
+
+.horarios-section h2 {
+    color: var(--teal);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.horarios-section .table {
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.horarios-section .table thead {
+    background: linear-gradient(135deg, var(--teal-darker) 0%, var(--teal-dark) 100%);
+    color: #fff;
+}
+
+.horarios-section .table thead th {
+    border-color: rgba(255, 255, 255, 0.15);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    padding: 0.9rem;
+}
+
+.horarios-section .table tbody td {
+    padding: 0.8rem;
+    vertical-align: middle;
+}
+
+.horarios-section .table tbody tr:hover {
+    background-color: var(--accent-soft);
+}
+
+.horarios-section .table td.table-warning {
+    background-color: #fff7e0;
+    color: #92700c;
+    font-style: italic;
+    font-weight: 600;
 }

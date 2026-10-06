@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<th:block th:fragment="modales_login">
+
+    <!-- Modal principal: selección de rol -->
+    <div class="modal fade" id="mainLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content login-modal-content p-4 text-center">
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <div class="login-modal-icon mb-3">
+                    <i class="fa-solid fa-paw"></i>
+                </div>
+                <h5 class="modal-title fw-bold mb-1">Bienvenido de nuevo</h5>
+                <p class="text-muted mb-4">Selecciona cómo quieres iniciar sesión</p>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <button type="button" class="role-card w-100" id="btnSoyCliente">
+                            <i class="fa-solid fa-user"></i>
+                            <span>Soy Cliente</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="role-card w-100" id="btnSoyTrabajador">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>Soy Trabajador</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal cliente: login / registro -->
+    <div class="modal fade" id="clienteLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content login-modal-content p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="clienteModalTitle">Acceso Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="clienteLoginView">
+                        <form id="clienteLoginForm">
+                            <div class="mb-3">
+                                <label class="form-label" for="clienteUsername">Usuario</label>
+                                <input type="text" id="clienteUsername" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="clientePassword">Contraseña</label>
+                                <input type="password" id="clientePassword" class="form-control" required>
+                            </div>
+                            <div id="clienteLoginError" class="text-danger mb-3" style="display:none"></div>
+                            <button type="submit" class="btn btn-teal w-100">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión
+                            </button>
+                            <p class="text-center mt-3 mb-0">¿No tienes cuenta?
+                                <a href="#" id="showRegisterLink">Regístrate aquí</a>
+                            </p>
+                        </form>
+                    </div>
+
+                    <div id="clienteRegisterView" style="display:none;">
+                        <form id="clienteRegisterForm">
+                            <h6 class="fw-bold text-patitas mb-3">Registro de Nuevo Cliente</h6>
+                            <div class="mb-3">
+                                <label class="form-label" for="registerUsername">Nombre de Usuario</label>
+                                <input type="text" id="registerUsername" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="registerPassword">Contraseña</label>
+                                <input type="password" id="registerPassword" class="form-control" required>
+                            </div>
+                            <div id="clienteRegisterError" class="text-danger mb-3" style="display:none"></div>
+                            <button type="submit" class="btn btn-teal w-100">
+                                <i class="fa-solid fa-user-plus me-2"></i>Crear Cuenta
+                            </button>
+                            <p class="text-center mt-3 mb-0">
+                                <a href="#" id="showLoginLink">Volver a Iniciar Sesión</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal trabajador -->
+    <div class="modal fade" id="trabajadorLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content login-modal-content p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Acceso Trabajador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="trabajadorLoginForm">
+                        <div class="mb-3">
+                            <label class="form-label" for="trabajadorUsername">Usuario</label>
+                            <input type="text" id="trabajadorUsername" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="trabajadorPassword">Contraseña</label>
+                            <input type="password" id="trabajadorPassword" class="form-control" required>
+                        </div>
+                        <div id="trabajadorLoginError" class="text-danger mb-3" style="display:none"></div>
+                        <button type="submit" class="btn btn-teal w-100">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+    .login-modal-content {
+        border: none;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        padding-bottom: 1.5rem !important;
+    }
+    .login-modal-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--teal) 0%, var(--accent) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: #fff;
+        box-shadow: var(--shadow-teal);
+    }
+    .role-card {
+        background-color: var(--accent-soft);
+        border: 2px solid transparent;
+        border-radius: var(--radius);
+        padding: 1.25rem 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--teal-dark);
+        font-weight: 700;
+        font-family: var(--font-body);
+        cursor: pointer;
+        transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+    .role-card i {
+        font-size: 1.6rem;
+        color: var(--teal);
+    }
+    .role-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-teal);
+        color: var(--teal-dark);
+    }
+</style>
+</th:block>
+
+</body>
+</html>

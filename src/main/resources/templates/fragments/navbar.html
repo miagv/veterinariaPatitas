@@ -1,13 +1,10 @@
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark" style="background-color:#35424a;">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark navbar-patitas">
     <div class="container">
 
         <!-- LOGO -->
         <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
-            <img th:src="@{/img/portadafondo.png}" alt="Veterinaria Patitas"
-                 class="rounded-circle object-fit-cover" style="width:60px; height:60px;">
-            <span class="fw-bolder text-uppercase" style="color:#00bfae; font-family: Montserrat, sans-serif;">
-                Veterinaria Patitas
-            </span>
+            <img th:src="@{/img/portadafondo.png}" alt="Veterinaria Patitas" class="rounded-circle">
+            <span>Veterinaria Patitas</span>
         </a>
 
         <!-- RESPONSIVE -->
@@ -17,49 +14,44 @@
         </button>
 
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav gap-2">
+            <ul class="navbar-nav align-items-lg-center">
 
                 <!-- OPCIONES PARA TODOS -->
-                <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/sobre_nosotros}"><i class="fa-solid fa-users"></i> Sobre Nosotros</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/adoptar}"><i class="fa-solid fa-paw"></i> Adoptatón</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/envia_mensaje}"><i class="fa-solid fa-envelope"></i> Enviar Mensaje</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/trabaja}"><i class="fa-solid fa-briefcase"></i> Trabaja con nosotros</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/simulador_ventas}"><i class="fa-solid fa-cart-shopping"></i> Shop</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/simulador_citas}"><i class="fa-solid fa-calendar"></i> Citas</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contacto"><i class="fa-solid fa-phone"></i> Contacto</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="fa-solid fa-house me-1"></i> Inicio</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/sobre_nosotros}"><i class="fa-solid fa-users me-1"></i> Nosotros</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/adoptar}"><i class="fa-solid fa-paw me-1"></i> Adoptatón</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/envia_mensaje}"><i class="fa-solid fa-envelope me-1"></i> Mensaje</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/trabaja}"><i class="fa-solid fa-briefcase me-1"></i> Trabajo</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/simulador_ventas}"><i class="fa-solid fa-cart-shopping me-1"></i> Shop</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/simulador_citas}"><i class="fa-solid fa-calendar me-1"></i> Citas</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contacto"><i class="fa-solid fa-phone me-1"></i> Contacto</a></li>
 
                 <!-- LOGIN (solo si NO está logueado) -->
-                <li class="nav-item" id="nav-login-link">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#roleLoginModal">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                <li class="nav-item ms-lg-2" id="nav-login-link">
+                    <a class="nav-link login-pill" href="#">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Login
                     </a>
                 </li>
 
-                <!-- MENÚ DE TRABAJADOR (solo cuando inicia sesión) -->
-                <li class="nav-item dropdown d-none" id="nav-user-menu">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown"
+                <!-- MENÚ DE USUARIO (cuando inicia sesión) -->
+                <li class="nav-item dropdown d-none ms-lg-2" id="nav-user-menu">
+                    <a class="nav-link dropdown-toggle login-pill" href="#" id="userDropdown"
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-user"></i> Usuario
                     </a>
 
-                    <!-- Dropdown correcto -->
-                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
-
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
                             <a class="dropdown-item" th:href="@{/dashboard}">
-                                <i class="fa-solid fa-shop"></i> Dashboard
+                                <i class="fa-solid fa-chart-line me-1"></i> Dashboard
                             </a>
                         </li>
-
                         <li><hr class="dropdown-divider"></li>
-
                         <li>
                             <a class="dropdown-item" href="#" id="logoutBtn">
-                                <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                                <i class="fa-solid fa-right-from-bracket me-1"></i> Cerrar sesión
                             </a>
                         </li>
-
                     </ul>
                 </li>
 

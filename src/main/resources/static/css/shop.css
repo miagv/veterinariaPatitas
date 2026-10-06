@@ -1,26 +1,71 @@
- body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
- .main-content-box {
-            background-color: white;
-            border-radius: 1rem; /* rounded-4 de Bootstrap */
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1); /* Sombra suave */
-        }
-.bg-patitas { background-color: #00bfae; } /* Color primario similar al teal */
-.text-patitas { color: #00bfae; }
-.btn-patitas { 
-background-color: #00bfae; 
-border-color: #00bfae;
-color: white;
-transition: background-color 0.15s ease-in-out;
+/* ===== Shop / Tienda ===== */
+.card-product {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background-color: var(--surface);
 }
-.btn-patitas:hover {
-background-color: #00a092;
-border-color: #00a092;
-color: white;
-}
-.card-product:hover {
-transform: translateY(-3px);
-box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15)!important;
-transition: transform 0.2s, box-shadow 0.2s;
-}
-.stock-agotado { text-decoration: line-through; }
 
+.card-product.border-start {
+    border-left-width: 5px !important;
+}
+
+.card-product.border-patitas {
+    border-left-color: var(--accent) !important;
+}
+
+.card-product .card-title {
+    color: var(--teal-dark);
+}
+
+.card-product .precio {
+    color: var(--accent-hover);
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+}
+
+.card-product:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-teal);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.stock-agotado {
+    text-decoration: line-through;
+}
+
+.empty-cart-icon {
+    font-size: 2rem;
+    color: var(--accent);
+}
+
+/* Panel del carrito */
+.cart-panel {
+    border-top: 4px solid var(--accent) !important;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+}
+
+.cart-panel .cart-title {
+    color: var(--teal);
+}
+
+.cart-total-row {
+    border-top: 1px solid var(--border);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--teal-dark);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Botón flotante de boleta */
+.invoice-fab {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 80px;
+    z-index: 1050;
+    box-shadow: var(--shadow-lg);
+}
